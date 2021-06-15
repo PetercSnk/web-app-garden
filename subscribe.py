@@ -4,9 +4,6 @@ import time
 def onMessage(client, userdata, message):
     print("Received message: ", str(message.payload.decode("utf-8")))
 
-def onLog(client, userdata, level, buf):
-    print("Log: ", buf)
-
 def onConnect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected OK")
@@ -21,9 +18,7 @@ client = mqtt.Client("Main")
 
 client.on_connect = onConnect
 client.on_disconnect = onDisconnect
-#client.on_log = onLog
 client.on_message = onMessage
-
 client.connect(mqttBroker)
 client.loop_start()
 client.subscribe("Moisture_01")
