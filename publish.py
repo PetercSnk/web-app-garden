@@ -24,15 +24,18 @@ def getSensor():
     moisture_01 = round(float(1 - (moisture_01 - 500) / 250), 3)
     moisture_02 = round(float(1 - (moisture_02 - 500) / 250), 3)
 
+    """
+    # Insert when sensors are set up
     if moisture_01 < 0.3 and moisture_02 < 0.3:
-        #grovepi.digitalWrite(relay, 1)
-        #time.sleep(water_timer)
+        grovepi.digitalWrite(relay, 1)
+        time.sleep(water_timer)
         water = True
     else:
-        #grovepi.digitalWrite(relay, 0)
+        grovepi.digitalWrite(relay, 0)
         water = False
+    """
 
-    return moisture_01, moisture_02, temperature, water
+    return moisture_01, moisture_02, temperature
 
 def onConnect(client, userdata, flags, rc):
     if rc == 0:
@@ -51,19 +54,24 @@ client = mqtt.Client("GardenPi")
 
 client.on_connect = onConnect
 client.on_disconnect = onDisconnect
+client.on_message = onMessage
 client.connect(mqttBroker)
 client.loop_start()
 
 while True:
-    moisture_01, moisture_02, temperature, water = getSensor()
+    """
+    moisture_01, moisture_02, temperature = getSensor()
     client.publish("Moisture_01", moisture_01)
     print(moisture_01)
     client.publish("Moisture_02", moisture_02)
     print(moisture_02)
     client.publish("Temperature", temperature)
     print(temperature)
-    client.publish("Water", water)
     time.sleep(1)
+    """
+
+    client.subscribe("Water") 
+
 
 client.loop_stop()
 client.disconnect(mqttBroker)
