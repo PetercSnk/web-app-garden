@@ -1,16 +1,6 @@
 import time
-import grovepi
-import RPi.GPIO as GPIO
 
-run = True
-
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-switch = 12
-relay = 3
-grovepi.pinMode(relay, "OUTPUT")
-
-def water_on():
+def water_on(relay, switch):
 	grovepi.digitalWrite(relay, 1)
 	high = False
 	low = False
@@ -28,7 +18,8 @@ def water_on():
 		if high and low:
 			grovepi.digitalWrite(relay, 0)
 			break
-def water_off():
+		
+def water_off(relay, switch):
 	grovepi.digitalWrite(relay, 1)
 	high = False
 	low = False
@@ -47,14 +38,4 @@ def water_off():
 			grovepi.digitalWrite(relay, 0)
 			break
 
-try:
-	while run:
-		inp = int(input("water: 1/0"))
-		if (inp == 1):
-			water_on()
-		elif (inp == 0):
-			water_off()
-except KeyboardInterrupt:
-	grovepi.digitalWrite(relay, 0)
-	run = False
 
