@@ -1,4 +1,5 @@
 import paho.mqtt.client as mqtt
+import RPi.GPIO as GPIO
 import time
 import grovepi
 import math
@@ -7,9 +8,11 @@ import pump
 moisture_sensor_01 = 0
 moisture_sensor_02 = 1
 temperature_sensor = 2
-relay = 2
-water_timer = 5
+relay = 3
+water_timer = 10
 switch = 12
+#message = False
+GPIO.setmode(GPIO.BOARD)
 grovepi.pinMode(relay, "OUTPUT")
 GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
@@ -34,7 +37,6 @@ def getSensor():
     else:
         grovepi.digitalWrite(relay, 0)
         water = False
-    
 
     return moisture_01, moisture_02, temperature
 
@@ -48,7 +50,13 @@ def onDisconnect(client, userdata, flags, rc = 0):
     print("Disconnected, returned: ", str(rc))
 
 def onMessage(client, userdata, message):
-    print("Recieved message: ", str(message.payload.decode("utf-8")))
+    message = bool(message.payload.decode("utf-8"))
+    print("Recieved message: ", message)
+    #if message == True:
+        #pump.water_on(relay, switch)
+        #message = False
+        #time.sleep(water_timer)
+        #pump.water_off(relay, switch)
 
 mqttBroker = "192.168.1.200"
 client = mqtt.Client("GardenPi")
@@ -71,9 +79,10 @@ while True:
     print(temperature)
     time.sleep(1)
     """
+    client.publish("Water", False)
+    time.sleep(1)
     client.subscribe("Water")
-    time.sleep(1) 
-
+    time.sleep(1)
 
 client.loop_stop()
 client.disconnect(mqttBroker)
