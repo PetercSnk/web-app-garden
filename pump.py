@@ -11,7 +11,6 @@ def water_on(relay, switch):
     low = False
     while True:
         i = GPIO.input(switch)
-        print(i)
         if (i == 0):
             low = True
             time.sleep(0.1)
@@ -31,7 +30,6 @@ def water_off(relay, switch):
     low = False
     while True:
         i = GPIO.input(switch)
-        print(i)
         if (i == 1):
             high = True
             time.sleep(0.1)
