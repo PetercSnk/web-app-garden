@@ -11,7 +11,7 @@ def onDisconnect(client, userdata, flags, rc = 0):
     print("Disconnected, returned: ", str(rc))
 
 def onMesasge(client, userdata, message):
-    print("Recieved message: ", str(message.payload.decode("utf-8")))
+    print("Received message: ", str(message.payload.decode("utf-8")))
 
 mqttBroker = "192.168.1.200"
 client = mqtt.Client("P")

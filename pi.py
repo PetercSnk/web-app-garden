@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 import time
 import grovepi
 import math
-import pump
+import pumpmodule
 
 #moisture_sensor_01 = 0
 #moisture_sensor_02 = 1
@@ -48,9 +48,9 @@ def onMessage(client, userdata, message):
     message = str(message.payload.decode("utf-8"))
     print("Recieved message: ", message)
     if message == "True":
-        pump.water_on(relay, switch)
+        pumpmodule.water_on(relay, switch)
         time.sleep(water_timer)
-        pump.water_off(relay, switch)
+        pumpmodule.water_off(relay, switch)
         client.publish("Water", False)
         message = "False"
 
