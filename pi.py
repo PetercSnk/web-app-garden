@@ -45,14 +45,15 @@ def onDisconnect(client, userdata, flags, rc = 0):
     print("Disconnected, returned: ", str(rc))
 
 def onMessage(client, userdata, message):
-    message = str(message.payload.decode("utf-8"))
+    message = bool(message.payload.decode("utf-8"))
     print("Recieved message: ", message)
-    if message == "True":
+    if message:
         pumpmodule.water_on(relay, switch)
         time.sleep(water_timer)
         pumpmodule.water_off(relay, switch)
-        client.publish("Water", False)
-        message = "False"
+        message = False
+        client.publish("Water", message)
+        
 
 mqttBroker = "192.168.1.200"
 client = mqtt.Client("GardenPi")
