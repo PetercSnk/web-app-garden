@@ -9,7 +9,6 @@ import pumpmodule
 #moisture_sensor_02 = 1
 #temperature_sensor = 2
 relay = 3
-water_timer = 10
 switch = 12
 GPIO.setmode(GPIO.BOARD)
 grovepi.pinMode(relay, "OUTPUT")
@@ -45,22 +44,21 @@ def onDisconnect(client, userdata, flags, rc = 0):
     print("Disconnected, returned: ", str(rc))
 
 def onMessage(client, userdata, message):
-    message = str(message.payload.decode("utf-8"))
+    message = int(message.payload.decode("utf-8"))
     print("Recieved message: ", message)
-    if message == "True":
-        pumpmodule.water_on(relay, switch)
-        time.sleep(water_timer)
-        pumpmodule.water_off(relay, switch)
-        client.publish("Water", False)
+    pumpmodule.water_on(relay, switch)
+    time.sleep(message)
+    pumpmodule.water_off(relay, switch)
+        
         
 
-mqttBroker = "192.168.1.200"
+mqtt_broker = "192.168.1.200"
 client = mqtt.Client("GardenPi")
 
 client.on_connect = onConnect
 client.on_disconnect = onDisconnect
 client.on_message = onMessage
-client.connect(mqttBroker)
+client.connect(mqtt_broker)
 client.loop_start()
 
 while True:
