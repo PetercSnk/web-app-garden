@@ -21,6 +21,6 @@ client.on_disconnect = onDisconnect
 client.on_message = onMessage
 client.connect(mqttBroker)
 client.loop_start()
-client.publish("Water", True)
+client.publish("Water", 5)
 client.loop_stop()
 client.disconnect(mqttBroker)
