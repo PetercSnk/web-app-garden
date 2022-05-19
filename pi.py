@@ -51,8 +51,8 @@ def onMessage(client, userdata, message):
         pumpmodule.water_on(relay, switch)
         time.sleep(water_timer)
         pumpmodule.water_off(relay, switch)
-        message = False
-        client.publish("Water", message)
+    message = False
+    client.publish("Water", message)
         
 
 mqttBroker = "192.168.1.200"
