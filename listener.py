@@ -14,7 +14,7 @@ def onMessage(client, userdata, message):
     print("Received message: ", str(message.payload.decode("utf-8")))
     
 mqttBroker = "192.168.1.200"
-client = mqtt.Client("Main")
+client = mqtt.Client("Listener")
 
 client.on_connect = onConnect
 client.on_disconnect = onDisconnect
