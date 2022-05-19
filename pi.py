@@ -50,11 +50,8 @@ def onMessage(client, userdata, message):
     time.sleep(message)
     pumpmodule.water_off(relay, switch)
         
-        
-
 mqtt_broker = "192.168.1.200"
 client = mqtt.Client("GardenPi")
-
 client.on_connect = onConnect
 client.on_disconnect = onDisconnect
 client.on_message = onMessage
