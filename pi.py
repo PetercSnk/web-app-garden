@@ -37,6 +37,7 @@ def getSensor():
 def onConnect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected OK")
+        pumpmodule.water_off(relay, switch)
     else:
         print("Bad connection, returned: ", rc)
 
