@@ -18,11 +18,15 @@ def onDisconnect(client, userdata, flags, rc = 0):
 def onMessage(client, userdata, message):
     print("Received message: ", str(message.payload.decode("utf-8")))
 
+def onPublish(client, userdata, mid, properties=None):
+    print("mid: " + str(mid))
+
+mqttBroker = "192.168.1.200"
 client = mqtt.Client("P")
-client.tls_set(tls_version=mqtt.ssl.PROTOCOL_TLS)
-client.username_pw_set("Sunuku", "5nEAH5egV3YM26D")
-client.connect("760086dbd62d4a53bd2bd7421eb7fc94.s2.eu.hivemq.cloud", 8883)
+client.connect(mqttBroker)
+
 client.on_connect = onConnect
+client.on_publish = onPublish
 client.on_disconnect = onDisconnect
 client.on_message = onMessage
 client.loop_start()
@@ -51,4 +55,4 @@ while True:
         print("Invalid type")
 
 client.loop_stop()
-client.disconnect(mqttBroker)
+client.disconnect()
