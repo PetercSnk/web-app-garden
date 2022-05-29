@@ -1,0 +1,1 @@
+screen -S GardenPi -dm python pi.py
