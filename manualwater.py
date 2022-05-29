@@ -18,15 +18,11 @@ def onDisconnect(client, userdata, flags, rc = 0):
 def onMessage(client, userdata, message):
     print("Received message: ", str(message.payload.decode("utf-8")))
 
-def onPublish(client, userdata, mid, properties=None):
-    print("mid: " + str(mid))
-
 mqttBroker = "192.168.1.200"
 client = mqtt.Client("P")
 client.connect(mqttBroker)
 
 client.on_connect = onConnect
-client.on_publish = onPublish
 client.on_disconnect = onDisconnect
 client.on_message = onMessage
 client.loop_start()
