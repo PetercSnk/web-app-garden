@@ -1,1 +1,2 @@
-screen -S GardenPi -dm python ~/Documents/repo/Automated-Garden/pi.py
+#!/bin/bash
+screen -dm bash -c "python ~/Documents/repo/Automated-Garden/pi.py"
