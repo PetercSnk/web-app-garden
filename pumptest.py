@@ -45,6 +45,6 @@ def water_off(relay, switch):
             grovepi.digitalWrite(relay, 0)
             break
 
-water_on(3, 12)
-time.sleep(5)
+#water_on(3, 12)
+#time.sleep(5)
 water_off(3, 12)
