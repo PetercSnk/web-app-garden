@@ -42,7 +42,7 @@ def onConnect(client, userdata, flags, rc):
         print("Bad connection, returned: ", rc)
 
 def onDisconnect(client, userdata, flags, rc = 0):
-    pumpmodule.water_off(relay, switch)
+    # pumpmodule.water_off(relay, switch)
     print("Disconnected, returned: ", str(rc))
 
 def onMessage(client, userdata, message):
