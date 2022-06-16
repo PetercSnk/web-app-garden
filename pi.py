@@ -29,6 +29,7 @@ def onMessage(client, userdata, message):
     time.sleep(message)
     pumpmodule.water_off(relay, switch)
         
+# make itself broker to fix broken pipe issue?        
 mqtt_broker = "192.168.1.200"
 client = mqtt.Client("GardenPi")
 client.on_connect = onConnect
