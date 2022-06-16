@@ -1,11 +1,9 @@
 import paho.mqtt.client as mqtt
 import time
-import numpy as np
 from datetime import datetime
 import os
 import pandas as pd
 
-# for use until sensors are setup
 def onConnect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected OK")
