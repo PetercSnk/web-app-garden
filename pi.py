@@ -21,6 +21,7 @@ def onConnect(client, userdata, flags, rc):
 def onDisconnect(client, userdata, flags, rc = 0):
     # pumpmodule.water_off(relay, switch)
     print("Disconnected, returned: ", str(rc))
+    client.loop_stop()
 
 def onMessage(client, userdata, message):
     message = int(message.payload.decode("utf-8"))
@@ -36,11 +37,10 @@ client.on_connect = onConnect
 client.on_disconnect = onDisconnect
 client.on_message = onMessage
 client.connect(mqtt_broker)
-client.loop_start()
 
-while True:
-    client.subscribe("Water")
-    time.sleep(1)
 
-client.loop_stop()
-client.disconnect(mqttBroker)
+client.subscribe("Water")
+time.sleep(1)
+
+client.loop_forever()
+
