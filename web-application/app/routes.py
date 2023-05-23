@@ -16,13 +16,13 @@ def home():
         if request.method == "POST":
             if "get-day" in request.form:
                 date = request.form["get-day"]
-                sunrise, sunset, time, temperature, humidity, weather, rain_chance, rain_recorded = format_for_graph(date)
+                sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
         else:
             date = Day.query.order_by(Day.date).first().date
-            sunrise, sunset, time, temperature, humidity, weather, rain_chance, rain_recorded = format_for_graph(date)
+            sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
     else:
         date = sunrise = sunset = time = temperature = humidity = weather = rain_chance = rain_recorded = 0
-    return render_template("home.html", user=current_user, all_day=all_day, date=date, sunrise=sunrise, sunset=sunset, time=time, temperature=temperature, humidity=humidity, weather=weather, rain_chance=rain_chance, rain_recorded=rain_recorded)
+    return render_template("home.html", user=current_user, all_day=all_day, date=date, sunrise=sunrise, sunset=sunset, time_weather_labels=time_weather_labels, temperature=temperature, humidity=humidity, rain_chance=rain_chance, rain_recorded=rain_recorded)
 
 @routes.route("/water", methods=["GET", "POST"])
 @login_required
@@ -98,21 +98,21 @@ def extract_data(json):
     return current_date, sunrise, sunset, weather_data
 
 def format_for_graph(date):
-    time =          []
-    temperature =   []
-    humidity =      []
-    weather =       []
-    rain_chance =   []
+    time_weather_labels = []
+    temperature = []
+    humidity = []
+    rain_chance = []
     rain_recorded = []
     selected_three_hour = ThreeHour.query.filter(ThreeHour.date==date).order_by(ThreeHour.time).all()
     selected_day = Day.query.filter(Day.date==date).first()
     sunrise = selected_day.sunrise
     sunset = selected_day.sunset
     for each_three_hour in selected_three_hour:
-        time.append(each_three_hour.time.hour)
+        time_string = each_three_hour.time.strftime("%H:%M:%S")
+        time_weather_label = f"{time_string} {each_three_hour.weather.title()}"
+        time_weather_labels.append(time_weather_label)
         temperature.append(each_three_hour.temperature)
         humidity.append(each_three_hour.humidity)
-        weather.append(each_three_hour.weather)
         rain_chance.append(each_three_hour.rain_chance)
         rain_recorded.append(each_three_hour.rain_recorded)
-    return sunrise, sunset, time, temperature, humidity, weather, rain_chance, rain_recorded
+    return sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded
