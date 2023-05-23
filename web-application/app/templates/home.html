@@ -18,29 +18,21 @@
             <canvas id="graph-canvas" width="900" height="500"></canvas>
             <script>
                 var ctx = document.getElementById("graph-canvas").getContext("2d");
-                var time = {{ time | safe }}
                 var temperature = {{ temperature | safe }}
                 var humidity = {{ humidity | safe }}
-                var weather = {{ weather | safe }}
                 var rain_chance = {{ rain_chance | safe }}
                 var rain_recorded = {{ rain_recorded | safe }}
-                function draw_chart() {
-                    var my_chart = new Chart(ctx, {
-                        type: "line",
-                        data: {
-                            labels: time,
-                            datasets: []
-                        },
-                        options: {
-                            response: false
-                        }
-                    })
-                };
-                $(document).ready(function() {
-                    draw_chart();
-                })
-
-
+                var time_weather_labels = {{ time_weather_labels | safe }}
+                var my_chart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: time_weather_labels,
+                        datasets: []
+                    },
+                    options: {
+                        response: true,
+                    }
+                });
                 var data = [
                     {
                         label: "Temperature",
@@ -78,6 +70,10 @@
                     }
                     my_chart.update();
                 }
+                addHideData(0);
+                addHideData(1);
+                addHideData(2);
+                addHideData(3);
             </script>
         </div>
         <div>
