@@ -1,5 +1,6 @@
 from flask import render_template, Blueprint, request, flash, redirect, url_for
 from flask_login import login_required, current_user
+from threading import Thread
 from . import db
 from .models import ThreeHour, Day
 import requests
@@ -29,22 +30,24 @@ def home():
 @routes.route("/water", methods=["GET", "POST"])
 @login_required
 def water():
+    if request.method == "POST":
+        water_time = request.form.get("wtime")
+        # script to water
+        thread = Thread(target=run_water(water_time), daemon=True, name="water")
+    return render_template("water.html", user=current_user)
+
+def run_water(water_time):
     pump_relay = 16
     valve_relay = 18
     valve_switch = 12
-    if request.method == "POST":
-        wtime = request.form.get("wtime")
-        print(wtime)
-        # script to water
-        valve = Valve(valve_relay, valve_switch)
-        pump = Pump(pump_relay)
-        valve.valve_on()
-        time.sleep(1)
-        pump.pump_on()
-        time.sleep(wtime)
-        valve.valve_off()
-        pump.pump_off()
-    return render_template("water.html", user=current_user)
+    valve = Valve(valve_relay, valve_switch)
+    pump = Pump(pump_relay)
+    valve.valve_on()
+    time.sleep(1)
+    pump.pump_on()
+    time.sleep(water_time)
+    valve.valve_off()
+    pump.pump_off()
 
 @routes.route("/get-weather")
 @login_required
