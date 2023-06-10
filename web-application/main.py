@@ -1,9 +1,6 @@
-from . import create_app, db
-import datetime
-import requests
-from threading import Thread
+from app import create_app, db
 
 app = create_app()
 
-if __name == "__main__":
+if __name__ == "__main__":
     app.run

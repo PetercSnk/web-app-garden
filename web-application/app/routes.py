@@ -5,6 +5,8 @@ from .models import ThreeHour, Day
 import requests
 from datetime import datetime
 from sqlalchemy import desc
+from .pump import Pump
+from .valve import Valve
 
 routes = Blueprint("routes", __name__)
 
@@ -27,10 +29,21 @@ def home():
 @routes.route("/water", methods=["GET", "POST"])
 @login_required
 def water():
+    pump_relay = 16
+    valve_relay = 18
+    valve_switch = 12
     if request.method == "POST":
         wtime = request.form.get("wtime")
         print(wtime)
         # script to water
+        valve = Valve(valve_relay, valve_switch)
+        pump = Pump(pump_relay)
+        valve.valve_on()
+        time.sleep(1)
+        pump.pump_on()
+        time.sleep(wtime)
+        valve.valve_off()
+        pump.pump_off()
     return render_template("water.html", user=current_user)
 
 @routes.route("/get-weather")
