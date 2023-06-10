@@ -8,7 +8,7 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setup(valve_switch, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(valve_relay, GPIO.OUT)
 
-def water_on(relay, switch):
+def valve_on(relay, switch):
     high = False
     low = False
     GPIO.output(relay, True)
@@ -26,7 +26,7 @@ def water_on(relay, switch):
             GPIO.output(relay, False)
             break
 
-def water_off(relay, switch):
+def valve_off(relay, switch):
     high = False
     low = False
     GPIO.output(relay, True)
