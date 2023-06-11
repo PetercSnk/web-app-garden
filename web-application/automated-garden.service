@@ -1,0 +1,9 @@
+[Unit]
+Description=Automated Garden Flask Application
+
+[Service]
+Type=simple
+ExecStart=/home/pi/Documents/repo/Automated-Garden/web-application/venv/bin/gunicorn --chdir /home/pi/Documents/repo/Automated-Garden/web-application main:app
+
+[Install]
+WantedBy=multi-user.target
