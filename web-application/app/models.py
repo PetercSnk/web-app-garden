@@ -21,3 +21,12 @@ class Day(db.Model):
     date = db.Column(db.Date)
     sunrise = db.Column(db.Time)
     sunset = db.Column(db.Time)
+
+class Water(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    start_date_time = db.Column(db.DateTime)
+    duration = db.Column(db.Integer)
+
+class WaterStatus(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.Boolean)
