@@ -2,12 +2,12 @@ from flask import render_template, Blueprint, request, flash, redirect, url_for
 from flask_login import login_required, current_user
 from threading import Thread
 from . import db
-from .models import ThreeHour, Day
+from .models import ThreeHour, Day, Water, WaterStatus
 import requests
 from datetime import datetime
 from sqlalchemy import desc
-from .pump import Pump
-from .valve import Valve
+#from .pump import Pump
+#from .valve import Valve
 import time
 
 routes = Blueprint("routes", __name__)
@@ -31,24 +31,55 @@ def home():
 @routes.route("/water", methods=["GET", "POST"])
 @login_required
 def water():
+    water_status = WaterStatus.query.first()
+    if not water_status:
+        db.session.add(WaterStatus(status=False))
+        db.session.commit()
+    water_status = WaterStatus.query.first()
+
+    print(water_status)
     if request.method == "POST":
-        water_time = request.form.get("wtime")
-        # script to water
-        thread = Thread(target=run_water(water_time), daemon=True, name="water")
+        if "wtime" in request.form:
+            if not water_status.status:
+                water_time = request.form.get("wtime")
+                water_thread = Thread(target=test, args=water_time)
+                db.session.add(Water(start_date_time=datetime.now(), duration=water_time))
+                water_status.status = True
+                db.session.commit()
+                water_thread.start()
+            else:
+                flash("Already Runnning", category="error")
+
+
+
+        # elif "cancel" in request.form:
+        #     if water.status:
+        #         force_stop()
+        #         water.running = False
+        #         db.session.commit()
+        #     else:
+        #         flash("Not Running", category="error")
     return render_template("water.html", user=current_user)
 
-def run_water(water_time):
-    pump_relay = 16
-    valve_relay = 18
-    valve_switch = 12
-    valve = Valve(valve_relay, valve_switch)
-    pump = Pump(pump_relay)
-    valve.valve_on()
-    time.sleep(1)
-    pump.pump_on()
-    time.sleep(int(water_time))
-    valve.valve_off()
-    pump.pump_off()
+def test(water_time):
+    print("start")
+
+
+def force_stop():
+    print("stop")
+
+# def run_water(water_time):
+#     pump_relay = 16
+#     valve_relay = 18
+#     valve_switch = 12
+#     valve = Valve(valve_relay, valve_switch)
+#     pump = Pump(pump_relay)
+#     valve.valve_on()
+#     time.sleep(1)
+#     pump.pump_on()
+#     time.sleep(int(water_time))
+#     valve.valve_off()
+#     pump.pump_off()
 
 @routes.route("/get-weather")
 @login_required
