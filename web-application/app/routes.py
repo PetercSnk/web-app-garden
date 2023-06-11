@@ -46,7 +46,7 @@ def run_water(water_time):
     valve.valve_on()
     time.sleep(1)
     pump.pump_on()
-    time.sleep(water_time)
+    time.sleep(int(water_time))
     valve.valve_off()
     pump.pump_off()
 
