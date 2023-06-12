@@ -1,16 +1,20 @@
 from flask import Flask
 import click
 from .config import Config
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
+from flask_executor import Executor
 
-db = SQLAlchemy()
+executor = Executor()
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    from .models import db
     db.init_app(app)
+
+    executor.init_app(app)
 
     from .routes import routes
     from .auth import auth

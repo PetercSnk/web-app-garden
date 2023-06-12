@@ -1,16 +1,17 @@
-from flask import render_template, Blueprint, request, flash, redirect, url_for
+from flask import render_template, Blueprint, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
-from threading import Thread
-from . import db
-from .models import ThreeHour, Day, Water, WaterStatus
+from threading import Event
+from .models import ThreeHour, Day, Water, WaterStatus, db
 import requests
 from datetime import datetime
 from sqlalchemy import desc
-#from .pump import Pump
-#from .valve import Valve
+from .pump import Pump
+from .valve import Valve
 import time
+from . import executor
 
 routes = Blueprint("routes", __name__)
+event = Event()
 
 @routes.route("/home", methods=["GET", "POST"])
 @login_required
@@ -25,61 +26,56 @@ def home():
             date = Day.query.order_by(Day.date).first().date
             sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
     else:
-        date = sunrise = sunset = time = temperature = humidity = weather = rain_chance = rain_recorded = 0
+        date = sunrise = sunset = time_weather_labels = time = temperature = humidity = weather = rain_chance = rain_recorded = 0
     return render_template("home.html", user=current_user, all_day=all_day, date=date, sunrise=sunrise, sunset=sunset, time_weather_labels=time_weather_labels, temperature=temperature, humidity=humidity, rain_chance=rain_chance, rain_recorded=rain_recorded)
 
 @routes.route("/water", methods=["GET", "POST"])
 @login_required
 def water():
-    water_status = WaterStatus.query.first()
-    if not water_status:
-        db.session.add(WaterStatus(status=False))
-        db.session.commit()
-    water_status = WaterStatus.query.first()
-
-    print(water_status)
     if request.method == "POST":
+        water_status = WaterStatus.query.first()
+        if not water_status:
+            db.session.add(WaterStatus(status=False))
+            db.session.commit()
+            water_status = WaterStatus.query.first()
         if "wtime" in request.form:
-            if not water_status.status:
-                water_time = request.form.get("wtime")
-                water_thread = Thread(target=test, args=water_time)
-                db.session.add(Water(start_date_time=datetime.now(), duration=water_time))
-                water_status.status = True
-                db.session.commit()
-                water_thread.start()
+            if water_status.status:
+                flash("Already Runnning", category="error")          
             else:
-                flash("Already Runnning", category="error")
-
-
-
-        # elif "cancel" in request.form:
-        #     if water.status:
-        #         force_stop()
-        #         water.running = False
-        #         db.session.commit()
-        #     else:
-        #         flash("Not Running", category="error")
+                water_time = int(request.form.get("wtime"))
+                water_status.status = True
+                db.session.add(Water(start_date_time=datetime.now(), duration=water_time))
+                db.session.commit()
+                executor.submit(water_event, water_time, event)
+        elif "cancel" in request.form:
+            if water_status.status:
+                event.set()
+            else:
+                flash("Not Running", category="error")
     return render_template("water.html", user=current_user)
 
-def test(water_time):
-    print("start")
-
-
-def force_stop():
-    print("stop")
-
-# def run_water(water_time):
-#     pump_relay = 16
-#     valve_relay = 18
-#     valve_switch = 12
-#     valve = Valve(valve_relay, valve_switch)
-#     pump = Pump(pump_relay)
-#     valve.valve_on()
-#     time.sleep(1)
-#     pump.pump_on()
-#     time.sleep(int(water_time))
-#     valve.valve_off()
-#     pump.pump_off()
+def water_event(water_time, event):
+    water_status = WaterStatus.query.first()
+    pump_relay = 16
+    valve_relay = 18
+    valve_switch = 12
+    valve = Valve(valve_relay, valve_switch)
+    pump = Pump(pump_relay)
+    valve.valve_on()
+    time.sleep(1)
+    pump.pump_on()
+    for x in range(water_time):
+        time.sleep(1)
+        if event.is_set():
+            valve.valve_off()
+            pump.pump_off()
+            water_status.status = False
+            db.session.commit()
+            return
+    valve.valve_off()
+    pump.pump_off()
+    water_status.status = False
+    db.session.commit()
 
 @routes.route("/get-weather")
 @login_required
@@ -88,13 +84,14 @@ def get_weather():
     json_response = request_weather()
     current_date, sunrise, sunset, weather_data = extract_data(json_response)
     if latest_weather_data:
-        if latest_weather_data.date == current_date:
-            flash("Todays data already exists", category="error")
+        if datetime.now().time().hour <= 22:
+            if latest_weather_data.date == current_date:
+                flash("Todays data already exists", category="error")
+            else:
+                add_weather_to_db(current_date, sunrise, sunset, weather_data)
+                flash("Added todays data", category="success")
         else:
-            add_weather_to_db(current_date, sunrise, sunset, weather_data)
-            flash("Added todays data", category="success")
-    elif datetime.now().time().hour >= 22:
-        flash("No available data for today", category="error")
+            flash("No available data for today", category="error")
     else:
         add_weather_to_db(current_date, sunrise, sunset, weather_data)
         flash("Added todays data", category="success")
