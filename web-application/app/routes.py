@@ -32,8 +32,9 @@ def home():
 @routes.route("/water", methods=["GET", "POST"])
 @login_required
 def water():
+    water_status = WaterStatus.query.first()
+    print(water_status.status)
     if request.method == "POST":
-        water_status = WaterStatus.query.first()
         if not water_status:
             db.session.add(WaterStatus(status=False))
             db.session.commit()
@@ -50,9 +51,12 @@ def water():
         elif "cancel" in request.form:
             if water_status.status:
                 event.set()
+                water_status.status = False
+                db.session.commit()
             else:
                 flash("Not Running", category="error")
-    return render_template("water.html", user=current_user)
+    print(water_status.status)
+    return render_template("water.html", user=current_user, status=water_status.status)
 
 def water_event(water_time, event):
     water_status = WaterStatus.query.first()
@@ -69,13 +73,9 @@ def water_event(water_time, event):
         if event.is_set():
             valve.valve_off()
             pump.pump_off()
-            water_status.status = False
-            db.session.commit()
             return
     valve.valve_off()
     pump.pump_off()
-    water_status.status = False
-    db.session.commit()
 
 @routes.route("/get-weather")
 @login_required
