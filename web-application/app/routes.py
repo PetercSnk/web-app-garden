@@ -1,4 +1,4 @@
-from flask import render_template, Blueprint, request, flash
+from flask import render_template, Blueprint, request, flash, redirect, url_for
 from flask_login import login_required, current_user
 from threading import Event
 from .models import ThreeHour, Day, Water, WaterStatus, db
@@ -35,6 +35,7 @@ def water():
     if not water_status:
         db.session.add(WaterStatus(status=False))
         db.session.commit()
+        water_status = WaterStatus.query.first()
     if request.method == "POST":
         water_status = WaterStatus.query.first()
         if "wtime" in request.form:
