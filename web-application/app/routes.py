@@ -32,11 +32,11 @@ def home():
 @login_required
 def water():
     water_status = WaterStatus.query.first()
+    if not water_status:
+        db.session.add(WaterStatus(status=False))
+        db.session.commit()
     if request.method == "POST":
-        if not water_status:
-            db.session.add(WaterStatus(status=False))
-            db.session.commit()
-            water_status = WaterStatus.query.first()
+        water_status = WaterStatus.query.first()
         if "wtime" in request.form:
             if water_status.status:
                 flash("Already Runnning", category="error")          
