@@ -1,11 +1,11 @@
 from flask import Flask
-import click
 from .config import Config
 from flask_login import LoginManager
-from werkzeug.security import generate_password_hash
 from flask_executor import Executor
+from flask_apscheduler import APScheduler
 
 executor = Executor()
+scheduler = APScheduler()
 
 def create_app():
     app = Flask(__name__)
@@ -15,6 +15,9 @@ def create_app():
     db.init_app(app)
 
     executor.init_app(app)
+
+    scheduler.init_app(app)
+    scheduler.start()
 
     from .routes import routes
     from .auth import auth
@@ -35,13 +38,7 @@ def create_app():
     def load_user(id):
         return User.query.get(int(id))
     
-    @app.cli.command("create-user")
-    @click.argument("username")
-    @click.argument("password")
-    def createUser(username, password):
-        initialUser = User(username=username, password=generate_password_hash(password, method="sha256"))
-        db.session.add(initialUser)
-        db.session.commit()
-    app.cli.add_command(createUser)
+    from . import commands
+    app.cli.add_command(commands.create_user)
 
     return app
