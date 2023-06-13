@@ -1,4 +1,4 @@
-from flask import render_template, Blueprint, request, flash, redirect, url_for
+from flask import render_template, Blueprint, request, flash
 from flask_login import login_required, current_user
 from threading import Event
 from .models import ThreeHour, Day, Water, WaterStatus, db
@@ -71,9 +71,13 @@ def water_event(water_time, event):
         if event.is_set():
             valve.valve_off()
             pump.pump_off()
+            event.clear()
             return
     valve.valve_off()
     pump.pump_off()
+    water_status.status = False
+    db.session.commit()
+    return
 
 def format_for_graph(date):
     time_weather_labels = []
