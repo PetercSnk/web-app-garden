@@ -1,14 +1,13 @@
-from flask import render_template, Blueprint, request, flash, redirect, url_for, current_app
+from flask import render_template, Blueprint, request, flash
 from flask_login import login_required, current_user
 from threading import Event
 from .models import ThreeHour, Day, Water, WaterStatus, db
-import requests
 from datetime import datetime
-from sqlalchemy import desc
 from .pump import Pump
 from .valve import Valve
 import time
-from . import executor
+from . import executor, scheduler
+from .jobs import get_weather
 
 routes = Blueprint("routes", __name__)
 event = Event()
@@ -33,7 +32,6 @@ def home():
 @login_required
 def water():
     water_status = WaterStatus.query.first()
-    print(water_status.status)
     if request.method == "POST":
         if not water_status:
             db.session.add(WaterStatus(status=False))
@@ -55,7 +53,6 @@ def water():
                 db.session.commit()
             else:
                 flash("Not Running", category="error")
-    print(water_status.status)
     return render_template("water.html", user=current_user, status=water_status.status)
 
 def water_event(water_time, event):
@@ -77,71 +74,6 @@ def water_event(water_time, event):
     valve.valve_off()
     pump.pump_off()
 
-@routes.route("/get-weather")
-@login_required
-def get_weather():
-    latest_weather_data = ThreeHour.query.order_by(desc(ThreeHour.date)).first()
-    json_response = request_weather()
-    current_date, sunrise, sunset, weather_data = extract_data(json_response)
-    if latest_weather_data:
-        if datetime.now().time().hour <= 22:
-            if latest_weather_data.date == current_date:
-                flash("Todays data already exists", category="error")
-            else:
-                add_weather_to_db(current_date, sunrise, sunset, weather_data)
-                flash("Added todays data", category="success")
-        else:
-            flash("No available data for today", category="error")
-    else:
-        add_weather_to_db(current_date, sunrise, sunset, weather_data)
-        flash("Added todays data", category="success")
-    return redirect(url_for("routes.home"))
-
-def add_weather_to_db(current_date, sunrise, sunset, weather_data):
-    for wd in weather_data:
-        time =          wd[0]
-        temperature =   wd[1]
-        humidity =      wd[2]
-        weather =       wd[3]
-        rain_chance =   wd[4]
-        rain_recorded = wd[5]
-        db.session.add(ThreeHour(date=current_date, time=time, temperature=temperature, humidity=humidity, weather=weather, rain_chance=rain_chance, rain_recorded=rain_recorded))
-    db.session.add(Day(date=current_date, sunrise=sunrise, sunset=sunset))
-    db.session.commit()
-
-def kelvin_to_celsius(kelvin):
-    return (kelvin - 273.15)
-
-def request_weather():
-    BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?"
-    with open("api.txt", "r") as f:
-        API_KEY = f.read()
-    LAT = "51.529"
-    LON = "-3.191"
-    url = BASE_URL + "lat=" + LAT + "&lon=" + LON + "&appid=" + API_KEY
-    json_response = requests.get(url).json()
-    return json_response
-
-def extract_data(json):
-    timezone = json["city"]["timezone"]
-    sunrise = datetime.utcfromtimestamp(json["city"]["sunrise"] + timezone).time()
-    sunset = datetime.utcfromtimestamp(json["city"]["sunset"] + timezone).time()
-    current_date = datetime.now().date()
-    weather_data = []
-    for t_dict in json["list"]:
-        date_time = datetime.utcfromtimestamp(t_dict["dt"] + timezone)
-        if date_time.date() == current_date:
-            temperature = round(kelvin_to_celsius(t_dict["main"]["temp"]), 2)
-            humidity = t_dict["main"]["humidity"]
-            weather = t_dict["weather"][0]["description"]
-            rain_chance = t_dict["pop"]
-            if "rain" in t_dict:
-                rain_recorded = t_dict["rain"]["3h"]
-            else:
-                rain_recorded = 0
-            weather_data.append((date_time.time(), temperature, humidity, weather, rain_chance, rain_recorded))
-    return current_date, sunrise, sunset, weather_data
-
 def format_for_graph(date):
     time_weather_labels = []
     temperature = []
@@ -161,3 +93,8 @@ def format_for_graph(date):
         rain_chance.append(each_three_hour.rain_chance)
         rain_recorded.append(each_three_hour.rain_recorded)
     return sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded
+
+@scheduler.task("cron", id="schedule_tasks", minute=0, hour=1, day="*", month="*", day_of_week="*")
+def schedule_tasks():
+    with scheduler.app.app_context():
+        get_weather()
