@@ -25,7 +25,7 @@ class Valve:
                 high = False
             elif high and low:
                 GPIO.output(self.relay, False)
-                break
+                return True
 
     def valve_off(self):
         high = False
@@ -43,4 +43,4 @@ class Valve:
                 low = False
             elif high and low:
                 GPIO.output(self.relay, False)
-                break
+                return True
