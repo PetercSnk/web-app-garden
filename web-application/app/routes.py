@@ -1,6 +1,5 @@
 from flask import render_template, Blueprint, request, flash
 from flask_login import login_required, current_user
-from threading import Event
 from .models import ThreeHour, Day, Water, WaterStatus, db
 from datetime import datetime
 from .pump import Pump
@@ -10,7 +9,6 @@ from . import executor, scheduler
 from .jobs import get_weather
 
 routes = Blueprint("routes", __name__)
-event = Event()
 
 @routes.route("/home", methods=["GET", "POST"])
 @login_required
@@ -46,18 +44,10 @@ def water():
                 water_status.status = True
                 db.session.add(Water(start_date_time=datetime.now(), duration=water_time))
                 db.session.commit()
-                event.clear()
-                executor.submit(water_event, water_time, event)
-        elif "fstop" in request.form:
-            event.set()
-            valve.valve_off()
-            pump.pump_off()
-            water_status.status = False
-            db.session.commit()
+                executor.submit(water_event, water_time)
     return render_template("water.html", user=current_user, status=water_status.status)
 
-def water_event(water_time, event):
-    water_status = WaterStatus.query.first()
+def water_event(water_time):
     pump_relay = 16
     valve_relay = 18
     valve_switch = 12
@@ -66,13 +56,10 @@ def water_event(water_time, event):
     valve.valve_on()
     time.sleep(1)
     pump.pump_on()
-    for x in range(water_time):
-        time.sleep(1)
-        if event.is_set():
-            event.clear()
-            return
+    time.sleep(water_time)
     valve.valve_off()
     pump.pump_off()
+    water_status = WaterStatus.query.first()
     water_status.status = False
     db.session.commit()
     return
