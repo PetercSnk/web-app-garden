@@ -46,14 +46,14 @@ def water():
                 water_status.status = True
                 db.session.add(Water(start_date_time=datetime.now(), duration=water_time))
                 db.session.commit()
+                event.clear()
                 executor.submit(water_event, water_time, event)
-        elif "cancel" in request.form:
-            if water_status.status:
-                event.set()
-                water_status.status = False
-                db.session.commit()
-            else:
-                flash("Not Running", category="error")
+        elif "fstop" in request.form:
+            event.set()
+            valve.valve_off()
+            pump.pump_off()
+            water_status.status = False
+            db.session.commit()
     return render_template("water.html", user=current_user, status=water_status.status)
 
 def water_event(water_time, event):
@@ -69,8 +69,6 @@ def water_event(water_time, event):
     for x in range(water_time):
         time.sleep(1)
         if event.is_set():
-            valve.valve_off()
-            pump.pump_off()
             event.clear()
             return
     valve.valve_off()
