@@ -11,7 +11,7 @@ from . import executor
 routes = Blueprint("routes", __name__)
 event = Event()
 
-@routes.route("/home", methods=["GET", "POST"])
+@routes.route("/", methods=["GET", "POST"])
 @login_required
 def home():
     all_day = Day.query.order_by(Day.date).all()

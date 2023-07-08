@@ -5,7 +5,7 @@ from .models import User, db
 
 auth = Blueprint("auth", __name__)
 
-@auth.route("/", methods=["GET", "POST"])
+@auth.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form.get("username")
