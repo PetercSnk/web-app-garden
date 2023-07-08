@@ -1,7 +1,21 @@
-.base-container {
-    background-color: blanchedalmond;
+.day-btns, .graph-btns {
+    display: flex;
+    padding: 10px
 }
 
-canvas {
+button {
+    margin-right: 5px;
+}
+
+.navbar {
+    padding: 10px;
+}
+
+.nav-item {
+    text-decoration: none;
+    padding-right: 10px;
+}
+
+html {
     background-color: aliceblue;
 }
