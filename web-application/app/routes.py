@@ -6,8 +6,7 @@ from datetime import datetime
 from .pump import Pump
 from .valve import Valve
 import time
-from . import executor, scheduler
-from .jobs import get_weather
+from . import executor
 
 routes = Blueprint("routes", __name__)
 event = Event()
@@ -16,17 +15,18 @@ event = Event()
 @login_required
 def home():
     all_day = Day.query.order_by(Day.date).all()
-    if all_day:
+    latest_week = all_day[-7:]
+    if latest_week:
         if request.method == "POST":
             if "get-day" in request.form:
                 date = request.form["get-day"]
                 sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
         else:
-            date = Day.query.order_by(Day.date).first().date
+            date = latest_week[-1].date
             sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
     else:
         date = sunrise = sunset = time_weather_labels = time = temperature = humidity = weather = rain_chance = rain_recorded = 0
-    return render_template("home.html", user=current_user, all_day=all_day, date=date, sunrise=sunrise, sunset=sunset, time_weather_labels=time_weather_labels, temperature=temperature, humidity=humidity, rain_chance=rain_chance, rain_recorded=rain_recorded)
+    return render_template("home.html", user=current_user, latest_week=latest_week, date=date, sunrise=sunrise, sunset=sunset, time_weather_labels=time_weather_labels, temperature=temperature, humidity=humidity, rain_chance=rain_chance, rain_recorded=rain_recorded)
 
 @routes.route("/water", methods=["GET", "POST"])
 @login_required
@@ -74,6 +74,7 @@ def water_event(water_time):
             event.clear()
             return
     valve.valve_off()
+    time.sleep(1)
     pump.pump_off()
     water_status.status = False
     db.session.commit()
@@ -98,8 +99,3 @@ def format_for_graph(date):
         rain_chance.append(each_three_hour.rain_chance)
         rain_recorded.append(each_three_hour.rain_recorded)
     return sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded
-
-@scheduler.task("cron", id="schedule_tasks", minute=0, hour=1, day="*", month="*", day_of_week="*")
-def schedule_tasks():
-    with scheduler.app.app_context():
-        get_weather()
