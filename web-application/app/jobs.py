@@ -66,7 +66,7 @@ def extract_data(json):
 @scheduler.task("cron", id="delete_old_records", minute=0, hour=23, day="*", month="*", day_of_week="*")
 def delete_old_records():
     with scheduler.app.app_context():
-        all_day = Day.query.order_by(desc(Day.date)).all()
+        all_day = Day.query.order_by(Day.date).all()
         days_to_delete = all_day[:-7]
         if days_to_delete:
             for day in days_to_delete:
