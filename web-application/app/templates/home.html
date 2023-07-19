@@ -8,7 +8,7 @@
         <h1>Weather Forecast</h1>
         <h4>Date: {{ date }} Sunrise: {{ sunrise }} Sunset: {{ sunset }}</h4>
         <div class="day-btns">
-            {% for day in latest_week %}
+            {% for day in all_day %}
             <form method="post">
                 <button type="submit" class="normal-btn" value="{{ day.date }}" name="get-day">{{ day.date }}</button>
             </form>
