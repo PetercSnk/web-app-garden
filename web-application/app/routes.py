@@ -15,18 +15,17 @@ event = Event()
 @login_required
 def home():
     all_day = Day.query.order_by(Day.date).all()
-    latest_week = all_day[-7:]
-    if latest_week:
+    if all_day:
         if request.method == "POST":
             if "get-day" in request.form:
                 date = request.form["get-day"]
                 sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
         else:
-            date = latest_week[-1].date
+            date = Day.query.order_by(Day.date).first().date
             sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
     else:
         date = sunrise = sunset = time_weather_labels = time = temperature = humidity = weather = rain_chance = rain_recorded = 0
-    return render_template("home.html", user=current_user, latest_week=latest_week, date=date, sunrise=sunrise, sunset=sunset, time_weather_labels=time_weather_labels, temperature=temperature, humidity=humidity, rain_chance=rain_chance, rain_recorded=rain_recorded)
+    return render_template("home.html", user=current_user, all_day=all_day, date=date, sunrise=sunrise, sunset=sunset, time_weather_labels=time_weather_labels, temperature=temperature, humidity=humidity, rain_chance=rain_chance, rain_recorded=rain_recorded)
 
 @routes.route("/water", methods=["GET", "POST"])
 @login_required
