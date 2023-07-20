@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from threading import Event
 from .models import ThreeHour, Day, Water, WaterStatus, db
 from datetime import datetime
+from sqlalchemy import desc
 from .pump import Pump
 from .valve import Valve
 import time
@@ -21,7 +22,7 @@ def home():
                 date = request.form["get-day"]
                 sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
         else:
-            date = Day.query.order_by(Day.date).first().date
+            date = Day.query.order_by(desc(Day.date)).first().date
             sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
     else:
         date = sunrise = sunset = time_weather_labels = time = temperature = humidity = weather = rain_chance = rain_recorded = 0
