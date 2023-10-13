@@ -4,7 +4,7 @@ from datetime import datetime
 from . import scheduler
 import requests
 
-@scheduler.task("cron", id="get_weather", minute=0, hour=1, day="*", month="*", day_of_week="*")
+@scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
 def get_weather():
     with scheduler.app.app_context():
         latest_weather_data = ThreeHour.query.order_by(desc(ThreeHour.date)).first()
@@ -63,7 +63,7 @@ def extract_data(json):
             weather_data.append((date_time.time(), temperature, humidity, weather, rain_chance, rain_recorded))
     return current_date, sunrise, sunset, weather_data
 
-@scheduler.task("cron", id="delete_old_records", minute=0, hour=23, day="*", month="*", day_of_week="*")
+@scheduler.task("cron", id="delete_old_records", minute="0", hour="2", day="*", month="*", day_of_week="*")
 def delete_old_records():
     with scheduler.app.app_context():
         all_day = Day.query.order_by(Day.date).all()
