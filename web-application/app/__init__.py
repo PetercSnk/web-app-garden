@@ -40,8 +40,8 @@ def create_app():
         return User.query.get(int(id))
     
     # remove when default user is added
-    # from . import commands
-    # app.cli.add_command(commands.create_user)
+    from . import commands
+    app.cli.add_command(commands.create_user)
 
     # incase of restart during water
     from .pump import Pump
