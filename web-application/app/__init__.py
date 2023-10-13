@@ -50,14 +50,14 @@ def create_app():
     app.cli.add_command(commands.create_user)
 
     # incase of restart during water
-    # from .pump import Pump
-    # from .valve import Valve
-    # pump_relay = 16
-    # valve_relay = 18
-    # valve_switch = 12
-    # valve = Valve(valve_relay, valve_switch)
-    # pump = Pump(pump_relay)
-    # valve.valve_off()
-    # pump.pump_off()
+    from .pump import Pump
+    from .valve import Valve
+    pump_relay = 16
+    valve_relay = 18
+    valve_switch = 12
+    valve = Valve(valve_relay, valve_switch)
+    pump = Pump(pump_relay)
+    valve.valve_off()
+    pump.pump_off()
 
     return app

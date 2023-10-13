@@ -4,8 +4,8 @@ from threading import Event
 from .models import ThreeHour, Day, Water, WaterStatus, db
 from datetime import datetime
 from sqlalchemy import desc
-# from .pump import Pump
-# from .valve import Valve
+from .pump import Pump
+from .valve import Valve
 import time
 from . import executor
 
@@ -53,27 +53,27 @@ def water():
     return render_template("water.html", user=current_user, status=water_status.status)
 
 def water_event(water_time):
-    # water_status = WaterStatus.query.first()
-    # pump_relay = 16
-    # valve_relay = 18
-    # valve_switch = 12
-    # valve = Valve(valve_relay, valve_switch)
-    # pump = Pump(pump_relay)
-    # valve.valve_on()
-    # time.sleep(1)
-    # pump.pump_on()
-    # for x in range(water_time):
-    #     time.sleep(1)
-    #     if event.is_set():
-    #         valve.valve_off()
-    #         pump.pump_off()
-    #         event.clear()
-    #         return
-    # valve.valve_off()
-    # time.sleep(1)
-    # pump.pump_off()
-    # water_status.status = False
-    # db.session.commit()
+    water_status = WaterStatus.query.first()
+    pump_relay = 16
+    valve_relay = 18
+    valve_switch = 12
+    valve = Valve(valve_relay, valve_switch)
+    pump = Pump(pump_relay)
+    valve.valve_on()
+    time.sleep(1)
+    pump.pump_on()
+    for x in range(water_time):
+        time.sleep(1)
+        if event.is_set():
+            valve.valve_off()
+            pump.pump_off()
+            event.clear()
+            return
+    valve.valve_off()
+    time.sleep(1)
+    pump.pump_off()
+    water_status.status = False
+    db.session.commit()
     return
 
 def format_for_graph(date):
