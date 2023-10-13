@@ -13,9 +13,10 @@ def create_app():
 
     from .models import db, User, WaterStatus
     db.init_app(app)
-
-    executor.init_app(app)
     scheduler.init_app(app)
+    executor.init_app(app)
+
+    from . import jobs 
     scheduler.start()
 
     from .routes import routes
@@ -38,8 +39,9 @@ def create_app():
     def load_user(id):
         return User.query.get(int(id))
     
-    from . import commands
-    app.cli.add_command(commands.create_user)
+    # remove when default user is added
+    # from . import commands
+    # app.cli.add_command(commands.create_user)
 
     # incase of restart during water
     from .pump import Pump
