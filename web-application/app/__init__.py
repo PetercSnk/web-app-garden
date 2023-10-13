@@ -26,10 +26,16 @@ def create_app():
     
     with app.app_context():
         db.create_all()
+        water_status = WaterStatus.query.first()
+        # incase of new db
+        if not water_status:
+            db.session.add(WaterStatus(status=False))
+            db.session.commit()
         # incase of restart during water
         water_status = WaterStatus.query.first()
         water_status.status = False
         db.session.commit()
+
 
     login_manager = LoginManager()
     login_manager.login_view = "auth.login"
@@ -44,14 +50,14 @@ def create_app():
     app.cli.add_command(commands.create_user)
 
     # incase of restart during water
-    from .pump import Pump
-    from .valve import Valve
-    pump_relay = 16
-    valve_relay = 18
-    valve_switch = 12
-    valve = Valve(valve_relay, valve_switch)
-    pump = Pump(pump_relay)
-    valve.valve_off()
-    pump.pump_off()
+    # from .pump import Pump
+    # from .valve import Valve
+    # pump_relay = 16
+    # valve_relay = 18
+    # valve_switch = 12
+    # valve = Valve(valve_relay, valve_switch)
+    # pump = Pump(pump_relay)
+    # valve.valve_off()
+    # pump.pump_off()
 
     return app
