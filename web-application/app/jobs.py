@@ -7,16 +7,20 @@ import requests
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
 def get_weather():
     with scheduler.app.app_context():
-        latest_weather_data = ThreeHour.query.order_by(desc(ThreeHour.date)).first()
-        json_response = request_weather()
-        current_date, sunrise, sunset, weather_data = extract_data(json_response)
+        latest_weather_data = Day.query.order_by(desc(Day.date)).first()
         if latest_weather_data:
-            if latest_weather_data.date == current_date:
-                return
+            if latest_weather_data.date == datetime.now().date():
+                return "Already Exists"
             else:
-                return add_weather_to_db(current_date, sunrise, sunset, weather_data)
+                json_response = request_weather()
+                current_date, sunrise, sunset, weather_data = extract_data(json_response)
+                add_weather_to_db(current_date, sunrise, sunset, weather_data)
+                return "Retrieved Weather Data"
         else:
-            return add_weather_to_db(current_date, sunrise, sunset, weather_data)
+            json_response = request_weather()
+            current_date, sunrise, sunset, weather_data = extract_data(json_response)
+            add_weather_to_db(current_date, sunrise, sunset, weather_data)
+            return "Retrieved Weather Data"
 
 def add_weather_to_db(current_date, sunrise, sunset, weather_data):
     for wd in weather_data:
