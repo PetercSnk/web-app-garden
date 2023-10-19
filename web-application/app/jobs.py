@@ -24,6 +24,7 @@ def try_request():
         return "Retrieved Weather Data"
     except:
         print(json_response)
+        app.logger.error(json_response)
         return "Error"
 
 def add_weather_to_db(current_date, sunrise, sunset, weather_data):
