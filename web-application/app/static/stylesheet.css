@@ -1,21 +1,37 @@
-.day-btns, .graph-btns {
-    display: flex;
-    padding: 10px
+.normal-btn, .multi-btn {
+    display: inline;
+    padding: 2px;
 }
 
-button {
-    margin-right: 5px;
+.multi-btn {
+    margin-right: 10px;
 }
-
 .navbar {
     padding: 10px;
 }
 
 .nav-item {
     text-decoration: none;
-    padding-right: 10px;
+    margin-right: 10px;
 }
 
 html {
     background-color: aliceblue;
+}
+
+.alert {
+    opacity: 0.8;
+    padding: 5px;
+}
+
+.error {
+    background-color: rgb(202, 110, 110);
+}
+
+.success {
+    background-color: rgb(128, 214, 128);
+}
+
+.info {
+    background-color: rgb(133, 133, 179);
 }
