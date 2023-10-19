@@ -36,7 +36,6 @@ def create_app():
         water_status.status = False
         db.session.commit()
 
-
     login_manager = LoginManager()
     login_manager.login_view = "auth.login"
     login_manager.init_app(app)
