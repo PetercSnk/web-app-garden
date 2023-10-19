@@ -12,15 +12,18 @@ def get_weather():
             if latest_weather_data.date == datetime.now().date():
                 return "Already Exists"
             else:
-                json_response = request_weather()
-                current_date, sunrise, sunset, weather_data = extract_data(json_response)
-                add_weather_to_db(current_date, sunrise, sunset, weather_data)
-                return "Retrieved Weather Data"
+                return try_request()
         else:
-            json_response = request_weather()
-            current_date, sunrise, sunset, weather_data = extract_data(json_response)
-            add_weather_to_db(current_date, sunrise, sunset, weather_data)
-            return "Retrieved Weather Data"
+            return try_request()
+
+def try_request():
+    json_response = request_weather()
+    try:
+        current_date, sunrise, sunset, weather_data = extract_data(json_response)
+        add_weather_to_db(current_date, sunrise, sunset, weather_data)
+        return "Retrieved Weather Data"
+    except:
+        print(json_response)
 
 def add_weather_to_db(current_date, sunrise, sunset, weather_data):
     for wd in weather_data:
@@ -48,27 +51,25 @@ def request_weather():
     return json_response
 
 def extract_data(json):
-    try:
-        timezone = json["city"]["timezone"]
-        sunrise = datetime.utcfromtimestamp(json["city"]["sunrise"] + timezone).time()
-        sunset = datetime.utcfromtimestamp(json["city"]["sunset"] + timezone).time()
-        current_date = datetime.now().date()
-        weather_data = []
-        for t_dict in json["list"]:
-            date_time = datetime.utcfromtimestamp(t_dict["dt"] + timezone)
-            if date_time.date() == current_date:
-                temperature = round(kelvin_to_celsius(t_dict["main"]["temp"]), 2)
-                humidity = t_dict["main"]["humidity"]
-                weather = t_dict["weather"][0]["description"]
-                rain_chance = t_dict["pop"]
-                if "rain" in t_dict:
-                    rain_recorded = t_dict["rain"]["3h"]
-                else:
-                    rain_recorded = 0
-                weather_data.append((date_time.time(), temperature, humidity, weather, rain_chance, rain_recorded))
-        return current_date, sunrise, sunset, weather_data
-    except:
-        print(json)
+    timezone = json["city"]["timezone"]
+    sunrise = datetime.utcfromtimestamp(json["city"]["sunrise"] + timezone).time()
+    sunset = datetime.utcfromtimestamp(json["city"]["sunset"] + timezone).time()
+    current_date = datetime.now().date()
+    weather_data = []
+    for t_dict in json["list"]:
+        date_time = datetime.utcfromtimestamp(t_dict["dt"] + timezone)
+        if date_time.date() == current_date:
+            temperature = round(kelvin_to_celsius(t_dict["main"]["temp"]), 2)
+            humidity = t_dict["main"]["humidity"]
+            weather = t_dict["weather"][0]["description"]
+            rain_chance = t_dict["pop"]
+            if "rain" in t_dict:
+                rain_recorded = t_dict["rain"]["3h"]
+            else:
+                rain_recorded = 0
+            weather_data.append((date_time.time(), temperature, humidity, weather, rain_chance, rain_recorded))
+    return current_date, sunrise, sunset, weather_data
+
 
 @scheduler.task("cron", id="delete_old_records", minute="0", hour="2", day="*", month="*", day_of_week="*")
 def delete_old_records():
