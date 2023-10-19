@@ -6,11 +6,16 @@
 {% block content %}
     <div class="graph-container">
         <h1>Weather Forecast</h1>
+        <div class="get-weather-btn">
+            <form method="post">
+                <button type="submit" class="normal-btn" name="get-weather">Get Weather</button>
+            </form>
+        </div>
         <h4>Date: {{ date }} Sunrise: {{ sunrise }} Sunset: {{ sunset }}</h4>
-        <div class="day-btns">
+        <div class="get-day-btns">
             {% for day in all_day %}
             <form method="post">
-                <button type="submit" class="normal-btn" value="{{ day.date }}" name="get-day">{{ day.date }}</button>
+                <button type="submit" class="multi-btn" value="{{ day.date }}" name="get-day">{{ day.date }}</button>
             </form>
             {% endfor %}
         </div>
@@ -77,14 +82,10 @@
             </script>
         </div>
         <div class="graph-btns">
-            <button class="normal-btn" onclick="addHideData(0)">Temperature (&#x2103)</button>
-            <button class="normal-btn" onclick="addHideData(1)">Humidity (%)</button>
-            <button class="normal-btn" onclick="addHideData(2)">Rain Chance (%)</button>
-            <button class="normal-btn" onclick="addHideData(3)">Rain Recorded (mm)</button>
+            <button class="multi-btn" onclick="addHideData(0)">Temperature (&#x2103)</button>
+            <button class="multi-btn" onclick="addHideData(1)">Humidity (%)</button>
+            <button class="multi-btn" onclick="addHideData(2)">Rain Chance (%)</button>
+            <button class="multi-btn" onclick="addHideData(3)">Rain Recorded (mm)</button>
         </div>
-
     </div>
-
-
-
 {% endblock %}
