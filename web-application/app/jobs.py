@@ -43,7 +43,7 @@ def kelvin_to_celsius(kelvin):
 
 def request_weather():
     BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?"
-    with open("api.txt", "r") as f:
+    with open("api", "r") as f:
         API_KEY = f.read()
     LAT = "51.529"
     LON = "-3.191"
