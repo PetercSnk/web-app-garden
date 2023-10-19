@@ -1,9 +1,10 @@
-from flask import render_template, Blueprint, request, flash
+from flask import render_template, Blueprint, request, flash, redirect
 from flask_login import login_required, current_user
 from threading import Event
 from .models import ThreeHour, Day, Water, WaterStatus, db
 from datetime import datetime
 from sqlalchemy import desc
+from . import jobs
 from .pump import Pump
 from .valve import Valve
 import time
@@ -16,16 +17,19 @@ event = Event()
 @login_required
 def home():
     all_day = Day.query.order_by(Day.date).all()
-    if all_day:
-        if request.method == "POST":
-            if "get-day" in request.form:
-                date = request.form["get-day"]
-                sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
-        else:
-            date = Day.query.order_by(desc(Day.date)).first().date
+    date = sunrise = sunset = time_weather_labels = time = temperature = humidity = weather = rain_chance = rain_recorded = 0
+    if request.method == "POST":
+        if "get-day" in request.form:
+            date = request.form["get-day"]
             sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
+        elif "get-weather" in request.form:
+            msg = jobs.get_weather()
+            flash(msg, category="info")
+            return redirect("/") 
     else:
-        date = sunrise = sunset = time_weather_labels = time = temperature = humidity = weather = rain_chance = rain_recorded = 0
+        if all_day:
+            date = Day.query.order_by(desc(Day.date)).first().date
+            sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)     
     return render_template("home.html", user=current_user, all_day=all_day, date=date, sunrise=sunrise, sunset=sunset, time_weather_labels=time_weather_labels, temperature=temperature, humidity=humidity, rain_chance=rain_chance, rain_recorded=rain_recorded)
 
 @routes.route("/water", methods=["GET", "POST"])
