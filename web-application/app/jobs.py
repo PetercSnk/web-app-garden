@@ -23,7 +23,7 @@ def try_request():
         add_weather_to_db(current_date, sunrise, sunset, weather_data)
         return "Retrieved Weather Data"
     except:
-        scheduler.app.current_app.logger.error(json_response)
+        scheduler.app.logger.error(json_response)
         return "Error"
 
 def add_weather_to_db(current_date, sunrise, sunset, weather_data):
@@ -48,6 +48,7 @@ def request_weather():
     LAT = "51.529"
     LON = "-3.191"
     url = BASE_URL + "lat=" + LAT + "&lon=" + LON + "&appid=" + API_KEY
+    scheduler.app.logger.info(url)
     json_response = requests.get(url).json()
     return json_response
 
