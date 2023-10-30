@@ -3,11 +3,10 @@ from sqlalchemy import desc
 from datetime import datetime
 from . import scheduler
 import requests
-from flask import current_app
 
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
 def get_weather():
-    with current_app.app_context():
+    with scheduler.app.app_context():
         latest_weather_data = Day.query.order_by(desc(Day.date)).first()
         if latest_weather_data:
             if latest_weather_data.date == datetime.now().date():
@@ -24,7 +23,7 @@ def try_request():
         add_weather_to_db(current_date, sunrise, sunset, weather_data)
         return "Retrieved Weather Data"
     except:
-        current_app.logger.error(json_response)
+        scheduler.app.current_app.logger.error(json_response)
         return "Error"
 
 def add_weather_to_db(current_date, sunrise, sunset, weather_data):
@@ -72,10 +71,9 @@ def extract_data(json):
             weather_data.append((date_time.time(), temperature, humidity, weather, rain_chance, rain_recorded))
     return current_date, sunrise, sunset, weather_data
 
-
 @scheduler.task("cron", id="delete_old_records", minute="0", hour="2", day="*", month="*", day_of_week="*")
 def delete_old_records():
-    with current_app.app_context():
+    with scheduler.app.app_context():
         all_day = Day.query.order_by(Day.date).all()
         days_to_delete = all_day[:-7]
         if days_to_delete:
