@@ -1,6 +1,9 @@
 .normal-btn, .multi-btn {
-    display: inline;
     padding: 2px;
+}
+
+.get-day-btns {
+    display: flex;
 }
 
 .multi-btn {
