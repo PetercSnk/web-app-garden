@@ -13,7 +13,7 @@
         </div>
         <h4>Date: {{ date }} Sunrise: {{ sunrise }} Sunset: {{ sunset }}</h4>
         <div class="get-day-btns">
-            {% for day in all_day %}
+            {% for day in db_days %}
             <form method="post">
                 <button type="submit" class="multi-btn" value="{{ day.date }}" name="get-day">{{ day.date }}</button>
             </form>
