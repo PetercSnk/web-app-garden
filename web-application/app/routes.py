@@ -3,7 +3,6 @@ from flask_login import login_required, current_user
 from threading import Event
 from .models import ThreeHour, Day, Water, WaterStatus, db
 from datetime import datetime
-from sqlalchemy import desc
 from . import jobs
 from .pump import Pump
 from .valve import Valve
@@ -16,7 +15,7 @@ event = Event()
 @routes.route("/", methods=["GET", "POST"])
 @login_required
 def home():
-    all_day = Day.query.order_by(Day.date).all()
+    db_days = Day.query.order_by(Day.date).all()
     date = sunrise = sunset = time_weather_labels = time = temperature = humidity = weather = rain_chance = rain_recorded = 0
     if request.method == "POST":
         if "get-day" in request.form:
@@ -25,12 +24,14 @@ def home():
         elif "get-weather" in request.form:
             msg = jobs.get_weather()
             flash(msg, category="info")
-            return redirect("/") 
+            return redirect("/")
+        else:
+            return redirect("/")
     else:
-        if all_day:
-            date = Day.query.order_by(desc(Day.date)).first().date
+        if db_days:
+            date = Day.query.order_by(Day.date).first().date
             sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)     
-    return render_template("home.html", user=current_user, all_day=all_day, date=date, sunrise=sunrise, sunset=sunset, time_weather_labels=time_weather_labels, temperature=temperature, humidity=humidity, rain_chance=rain_chance, rain_recorded=rain_recorded)
+    return render_template("home.html", user=current_user, db_days=db_days, date=date, sunrise=sunrise, sunset=sunset, time_weather_labels=time_weather_labels, temperature=temperature, humidity=humidity, rain_chance=rain_chance, rain_recorded=rain_recorded)
 
 @routes.route("/water", methods=["GET", "POST"])
 @login_required
@@ -47,7 +48,7 @@ def water():
                 db.session.add(Water(start_date_time=datetime.now(), duration=water_time))
                 db.session.commit()
                 executor.submit(water_event, water_time)
-        if "fstop" in request.form:
+        elif "fstop" in request.form:
             if water_status.status:
                 event.set()
                 water_status.status = False
@@ -86,16 +87,16 @@ def format_for_graph(date):
     humidity = []
     rain_chance = []
     rain_recorded = []
-    selected_three_hour = ThreeHour.query.filter(ThreeHour.date==date).order_by(ThreeHour.time).all()
+    selected_3h = ThreeHour.query.filter(ThreeHour.date==date).order_by(ThreeHour.time).all()
     selected_day = Day.query.filter(Day.date==date).first()
     sunrise = selected_day.sunrise
     sunset = selected_day.sunset
-    for each_three_hour in selected_three_hour:
-        time_string = each_three_hour.time.strftime("%H:%M:%S")
-        time_weather_label = f"{time_string} {each_three_hour.weather.title()}"
+    for each_3h in selected_3h:
+        time_string = each_3h.time.strftime("%H:%M:%S")
+        time_weather_label = f"{time_string} {each_3h.weather.title()}"
         time_weather_labels.append(time_weather_label)
-        temperature.append(each_three_hour.temperature)
-        humidity.append(each_three_hour.humidity)
-        rain_chance.append(each_three_hour.rain_chance)
-        rain_recorded.append(each_three_hour.rain_recorded)
+        temperature.append(each_3h.temperature)
+        humidity.append(each_3h.humidity)
+        rain_chance.append(each_3h.rain_chance)
+        rain_recorded.append(each_3h.rain_recorded)
     return sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded
