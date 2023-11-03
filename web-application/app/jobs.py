@@ -7,16 +7,18 @@ import requests
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
 def get_weather():
     try:
-        json_response = request_weather()
-        if json_response["cod"] == "200":
-            dates, sunrise, sunset, weather_data = extract_data(json_response)
+        status, reason, ok, json = request_weather()
+        if ok:
+            dates, sunrise, sunset, weather_data = extract_data(json)
             dates_added = add_to_db(dates, sunrise, sunset, weather_data)
             if dates_added:
                 return "Added: " + ", ".join(dates_added)
             else:
                 return "No New Data"
         else:
-            scheduler.app.logger.error(json_response)
+            scheduler.app.logger.error(status)
+            scheduler.app.logger.error(reason)
+            scheduler.app.logger.error(json)
             return "Error"
     except Exception as e:
         scheduler.app.logger.error(e)
@@ -33,8 +35,8 @@ def request_weather():
     LON = "-3.191"
     url = BASE_URL + "lat=" + LAT + "&lon=" + LON + "&appid=" + API_KEY
     # scheduler.app.logger.info(url)
-    json_response = requests.get(url).json()
-    return json_response
+    request = requests.get(url)
+    return request.status_code, request.reason, request.ok, request.json()
 
 def extract_data(json):
     timezone = json["city"]["timezone"]
