@@ -18,9 +18,8 @@ StandardError=journal
 [Install]
 WantedBy=multi-user.target
 ```
-3.Change the api file to contain your OpenWeatherMap API key.
-4. Once these values are correct everything should be able to be installed using the setup script, the only prequisite is that Python3 is installed.
-```sudo ./setup.sh```
+3. Change the api file to contain your OpenWeatherMap API key.
+4. Once these values are correct everything should be able to be installed using the setup script ```sudo ./setup.sh```, the only prequisite is that Python3 is installed.
 
 ## Configuration
 
@@ -45,5 +44,6 @@ Validation has not been added yet so this web application is intended for local 
 ## To Do
 - [ ] Validation on authentication attempts.
 - [ ] Option for watering to be done automatically based on certain parameters that can be tweaked.
+- [ ] Complete the config readme section
 
 
