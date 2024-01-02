@@ -6,7 +6,7 @@ This was designed with specific components and devices in mind, it can work for 
 
 ## Configuration
 The files pump.py and valve.py will likely not work with your system. You will need to replace these with your own file(s) that control your component(s).
-These are imported and used within routes.py and __init__.py, change these imports to match yours instead.
+These are imported and used within routes.py and \_\_init__.py, change these imports to match yours instead.
 ```
 from .pump import Pump 
 from .valve import Valve
@@ -35,7 +35,7 @@ def water_event(water_time):
     db.session.commit()
     return
 ```
-Within __init__.py lines 52 to 60 turn the components off if the host device restarts, replace this with your setup and off function(s). 
+Within \_\_init__.py lines 52 to 60 turn the components off if the host device restarts, replace this with your setup and off function(s). 
 ```
     # incase of restart during water
     from .pump import Pump
