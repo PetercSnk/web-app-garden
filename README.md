@@ -80,7 +80,7 @@ The front end of the web application is very simple and may be updated at a late
 
 ## Back End
 The majority of this web application is controlled via the back end, further information is provided below:
-1. All weather data is collected from OpenWeatherMap using their API. This request returns a large JSON which is sorted and stored within our SQL database.
+1. All weather data is collected from OpenWeatherMap using their API. This request returns a JSON which is sorted and stored within an SQL database.
 2. The functions that retrieve new weather data and delete old weather data are contained within jobs.py, here the scheduler automatically executes these functions at a certain time and day.
 4. When selecting to view the weather for a certain date the database is intially queried and formatted appropriately for Chart.js.
 5. Watering makes use of flask executor and threading where components are toggled in the background and running processes are cancelled with events.
