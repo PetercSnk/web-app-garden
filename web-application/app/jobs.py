@@ -4,12 +4,16 @@ from datetime import datetime
 from . import scheduler
 import requests
 
+# use a dictionary for weather data and date as key? potentially better solution
+
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
 def get_weather():
     try:
         status, reason, ok, json = request_weather()
         if ok:
             dates, sunrise, sunset, weather_data = extract_data(json)
+            # openweathermap includes the first half for day 6 in a 5 day weather forecast? remove this as we don't want it
+            dates, weather_data = remove_last(dates, weather_data)
             dates_added = add_to_db(dates, sunrise, sunset, weather_data)
             if dates_added:
                 return "Added: " + ", ".join(dates_added)
@@ -34,7 +38,6 @@ def request_weather():
     LAT = "51.529"
     LON = "-3.191"
     url = BASE_URL + "lat=" + LAT + "&lon=" + LON + "&appid=" + API_KEY
-    # scheduler.app.logger.info(url)
     request = requests.get(url)
     return request.status_code, request.reason, request.ok, request.json()
 
@@ -60,6 +63,19 @@ def extract_data(json):
             rain_recorded = 0
         weather_data.append((date, time, temperature, humidity, weather, rain_chance, rain_recorded))
     return dates, sunrise, sunset, weather_data
+
+def remove_last(dates, weather_data):
+    dates.sort()
+    weather_data.sort(key=lambda x : x[0])
+    length_weather_data = len(weather_data)
+    index = 0
+    while True:
+        if index == length_weather_data - 1:
+            scheduler.app.logger.error("Weather Data Missing")
+            return dates, weather_data
+        if weather_data[index][0] == dates[-1]:
+            return dates[:-1], weather_data[:index]
+        index = index + 1
 
 def add_to_db(dates, sunrise, sunset, weather_data):
     with scheduler.app.app_context():
