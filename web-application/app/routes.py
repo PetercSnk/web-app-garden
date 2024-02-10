@@ -65,7 +65,6 @@ def water_event(water_time):
     valve = Valve(valve_relay, valve_switch)
     pump = Pump(pump_relay)
     valve.valve_on()
-    time.sleep(1)
     pump.pump_on()
     for x in range(water_time):
         time.sleep(1)
@@ -75,7 +74,6 @@ def water_event(water_time):
             event.clear()
             return
     valve.valve_off()
-    time.sleep(1)
     pump.pump_off()
     water_status.status = False
     db.session.commit()
