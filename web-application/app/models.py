@@ -8,21 +8,22 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(32), unique=True)
     password = db.Column(db.String(256))
 
-class ThreeHour(db.Model):
+class Weather(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date)
+    day_id = db.Column(db.Integer, db.ForeignKey("day.id"))
     time = db.Column(db.Time)
-    temperature = db.Column(db.Integer)
+    temperature_c = db.Column(db.Integer)
     humidity = db.Column(db.Integer)
-    weather = db.Column(db.String(64))
-    rain_chance = db.Column(db.Integer)
-    rain_recorded = db.Column(db.Integer)
+    description = db.Column(db.String(64))
+    rain_probability = db.Column(db.Integer)
+    rain_volume_mm = db.Column(db.Integer)
 
 class Day(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date)
     sunrise = db.Column(db.Time)
     sunset = db.Column(db.Time)
+    weather = db.relationship("Weather", backref="day")
 
 class Water(db.Model):
     id = db.Column(db.Integer, primary_key=True)
