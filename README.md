@@ -91,6 +91,7 @@ Validation has not been added yet so this web application is intended for local 
 ## To Do
 - [ ] Validation on authentication attempts.
 - [ ] Option for watering to be done automatically based on certain parameters that can be tweaked.
-- [ ] Complete the config readme section
+- [ ] Complete the config readme section.
+- [ ] Diagrams need updating to include pump, also tidy up.
 
 
