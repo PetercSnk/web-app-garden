@@ -18,6 +18,7 @@ def home():
     db_days = Day.query.order_by(Day.date).all()
     date = sunrise = sunset = time_weather_labels = time = temperature = humidity = weather = rain_chance = rain_recorded = 0
     if request.method == "POST":
+        # can this be made GET? date as arg and in url
         if "get-day" in request.form:
             date = request.form["get-day"]
             sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)
@@ -27,10 +28,10 @@ def home():
             return redirect("/")
         else:
             return redirect("/")
-    # else:
-    #     if db_days:
-    #         date = Day.query.order_by(Day.date).first().date
-    #         sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)     
+    else:
+        if db_days:
+            date = Day.query.order_by(Day.date).first().date
+            sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded = format_for_graph(date)     
     return render_template("home.html", user=current_user, db_days=db_days, date=date, sunrise=sunrise, sunset=sunset, time_weather_labels=time_weather_labels, temperature=temperature, humidity=humidity, rain_chance=rain_chance, rain_recorded=rain_recorded)
 
 @routes.route("/water", methods=["GET", "POST"])
@@ -79,22 +80,16 @@ def water_event(water_time):
     # db.session.commit()
     return
 
-# def format_for_graph(date):
-#     time_weather_labels = []
-#     temperature = []
-#     humidity = []
-#     rain_chance = []
-#     rain_recorded = []
-#     selected_3h = Weather.query.filter(Weather.date==date).order_by(Weather.time).all()
-#     selected_day = Day.query.filter(Day.date==date).first()
-#     sunrise = selected_day.sunrise
-#     sunset = selected_day.sunset
-#     for each_3h in selected_3h:
-#         time_string = each_3h.time.strftime("%H:%M:%S")
-#         time_weather_label = f"{time_string} {each_3h.weather.title()}"
-#         time_weather_labels.append(time_weather_label)
-#         temperature.append(each_3h.temperature)
-#         humidity.append(each_3h.humidity)
-#         rain_chance.append(each_3h.rain_chance)
-#         rain_recorded.append(each_3h.rain_recorded)
-#     return sunrise, sunset, time_weather_labels, temperature, humidity, rain_chance, rain_recorded
+def format_for_graph(date):
+    day = Day.query.filter(Day.date==date).first()
+    weather = Weather.query.filter(Weather.day_id==day.id).order_by(Weather.time).all()
+    sunrise = day.sunrise
+    sunset = day.sunset
+    labels, temperature_c, humidity, rain_probability, rain_volume_mm = [], [], [], [], []
+    for three_hour_step in weather:
+        labels.append(f"{three_hour_step.time.strftime('%H:%M:%S')} {three_hour_step.description.title()}")
+        temperature_c.append(three_hour_step.temperature_c)
+        humidity.append(three_hour_step.humidity)
+        rain_probability.append(three_hour_step.rain_probability)
+        rain_volume_mm.append(three_hour_step.rain_volume_mm)
+    return sunrise, sunset, labels, temperature_c, humidity, rain_probability, rain_volume_mm
