@@ -1,11 +1,8 @@
 from .models import db, Weather, Day
-from sqlalchemy import desc
 import datetime
 from suntime import Sun
 from . import scheduler
 import requests
-
-# use a dictionary for weather data and date as key? potentially better solution
 
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
 def get_weather():
@@ -94,16 +91,14 @@ def add_to_db(organised_forecast):
         db.session.commit()
     return dates_added
 
-# @scheduler.task("cron", id="delete_old_records", minute="0", hour="2", day="*", month="*", day_of_week="*")
-# def delete_old_records():
-#     with scheduler.app.app_context():
-#         db_days = Day.query.order_by(Day.date).all()
-#         days_to_delete = db_days[:-7]
-#         if days_to_delete:
-#             for day in days_to_delete:
-#                 _3h_to_delete = ThreeHour.query.filter(ThreeHour.date==day.date).all()
-#                 for _3h in _3h_to_delete:
-#                     db.session.delete(_3h)
-#                 db.session.delete(day)
-#             db.session.commit()
-#         return
+@scheduler.task("cron", id="delete_old_records", minute="0", hour="2", day="*", month="*", day_of_week="*")
+def delete_old_records():
+    with scheduler.app.app_context():
+        db_days = Day.query.order_by(Day.date).all()
+        # keeps data for only 7 days
+        days_to_delete = db_days[:-7]
+        if days_to_delete:
+            for day in days_to_delete:
+                db.session.delete(day)
+            db.session.commit()
+        return
