@@ -11,27 +11,25 @@
                 <button type="submit" class="normal-btn" name="get-weather">Get Weather</button>
             </form>
         </div>
-        <h4>Date: {{ date }} Sunrise: {{ sunrise }} Sunset: {{ sunset }}</h4>
+        <h4>Date: {{ format_date(date) }} Sunrise: {{ sunrise }} Sunset: {{ sunset }}</h4>
         <div class="get-day-btns">
             {% for day in db_days %}
-            <form method="post">
-                <button type="submit" class="multi-btn" value="{{ day.date }}" name="get-day">{{ day.date }}</button>
-            </form>
+                <a class="nav-item" href="/weather/{{ day.id }}">{{ format_date(day.date) }}</a>
             {% endfor %}
         </div>
         <div class="graph">
             <canvas id="graph-canvas" width="900" height="500"></canvas>
             <script>
                 var ctx = document.getElementById("graph-canvas").getContext("2d");
-                var temperature = {{ temperature | safe }}
+                var temperature_c = {{ temperature_c | safe }}
                 var humidity = {{ humidity | safe }}
-                var rain_chance = {{ rain_chance | safe }}
-                var rain_recorded = {{ rain_recorded | safe }}
-                var time_weather_labels = {{ time_weather_labels | safe }}
+                var rain_probability = {{ rain_probability | safe }}
+                var rain_volume_mm = {{ rain_volume_mm | safe }}
+                var labels = {{ labels | safe }}
                 var my_chart = new Chart(ctx, {
                     type: "line",
                     data: {
-                        labels: time_weather_labels,
+                        labels: labels,
                         datasets: []
                     },
                     options: {
@@ -41,7 +39,7 @@
                 var data = [
                     {
                         label: "Temperature",
-                        data: temperature,
+                        data: temperature_c,
                         borderColor: "rgb(205, 92, 92)",
                         backgroundColor: "rgb(205, 92, 92)"
                     },
@@ -52,14 +50,14 @@
                         backgroundColor: "rgb(254, 186, 79)"
                     },
                     {
-                        label: "Rain Chance",
-                        data: rain_chance,
+                        label: "Rain Probability",
+                        data: rain_probability,
                         borderColor: "rgb(108, 160, 220)",
                         backgroundColor: "rgb(108, 160, 220)"
                     },
                     {
-                        label: "Rain Recorded",
-                        data: rain_recorded,
+                        label: "Rain Volume",
+                        data: rain_volume_mm,
                         borderColor: "rgb(137, 207, 240)",
                         backgroundColor: "rgb(137, 207, 240)"
                     }
@@ -84,8 +82,8 @@
         <div class="graph-btns">
             <button class="multi-btn" onclick="addHideData(0)">Temperature (&#x2103)</button>
             <button class="multi-btn" onclick="addHideData(1)">Humidity (%)</button>
-            <button class="multi-btn" onclick="addHideData(2)">Rain Chance (%)</button>
-            <button class="multi-btn" onclick="addHideData(3)">Rain Recorded (mm)</button>
+            <button class="multi-btn" onclick="addHideData(2)">Rain Probability (%)</button>
+            <button class="multi-btn" onclick="addHideData(3)">Rain Volume (mm)</button>
         </div>
     </div>
 {% endblock %}
