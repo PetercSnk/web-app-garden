@@ -23,7 +23,7 @@ class Day(db.Model):
     date = db.Column(db.Date)
     sunrise = db.Column(db.Time)
     sunset = db.Column(db.Time)
-    weather = db.relationship("Weather", backref="day")
+    weather = db.relationship("Weather", backref="day", cascade="all, delete-orphan")
 
 class Water(db.Model):
     id = db.Column(db.Integer, primary_key=True)
