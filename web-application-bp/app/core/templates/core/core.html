@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheet.css') }}"/>
+        {% block head %}{% endblock %}
+    </head>
+    <body>
+        <div class="base-container">
+            {% if user.is_authenticated %}
+                <nav class="navbar">
+                    <div>
+                        <a class="nav-item" id="home" href="/">Home</a>
+                        <a class="nav-item" id="water" href="/water">Water</a>
+                        <a class="nav-item" id="logout" href="/logout">Log Out</a>
+                    </div>
+                </nav>
+            {% endif %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}" id="alert">
+                            {{ message }}
+                            <button type="button" class="alert-btn" onclick="hideAlert()">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <div class="content">
+                {% block content %}{% endblock %}
+            </div>  
+        </div>
+        <script type="text/javascript" src="{{ url_for('static', filename='javascript.js') }}"></script>
+    </body>
+</html>
