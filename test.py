@@ -1,0 +1,86 @@
+import datetime
+import requests
+from suntime import Sun
+
+def kelvin_to_celsius(kelvin):
+    return (kelvin - 273.15)
+
+def request_weather():
+    BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?"
+    LAT = "51.529"
+    LON = "-3.191"
+    url = BASE_URL + "lat=" + LAT + "&lon=" + LON + "&appid=" + "546daeb0010a1b81043ca194bb2d0082"
+    json_response = requests.get(url).json()
+    return json_response
+
+def extract_data(json):
+    # information about city
+    city = json["city"]
+    latitude = city["coord"]["lat"]
+    longitude = city["coord"]["lon"]
+    timedelta = datetime.timedelta(seconds=city["timezone"])
+    timezone = datetime.timezone(timedelta)
+    # extract and organise only the necessary data
+    organised_forecast = {}
+    five_day_forecast = json["list"]
+    for three_hour_step in five_day_forecast:
+        date_time = datetime.datetime.utcfromtimestamp(three_hour_step["dt"]).astimezone(timezone)
+        weather_data = {
+            "time": date_time.time(),
+            "temperature_c": round(kelvin_to_celsius(three_hour_step["main"]["temp"]), 2),
+            "humidity": three_hour_step["main"]["humidity"],
+            "description": three_hour_step["weather"][0]["description"],
+            "rain_probability": three_hour_step["pop"]
+        }
+        # the volume of rain fall is not always included, check it exists or set it to zero
+        if "rain" in three_hour_step:
+            weather_data["rain_volume_mm"] = three_hour_step["rain"]["3h"]
+        else:
+            weather_data["rain_volume_mm"] = 0
+        # date is used as key within organised_forecast, its value is another dictionary containing a list of three hourly weather data, and the time of sunrise and sunset for that day
+        date = date_time.date()
+        if date in organised_forecast:
+            organised_forecast[date]["weather_data"].append(weather_data)
+        else:
+            sun = Sun(latitude, longitude)
+            organised_forecast[date] = {"weather_data": [weather_data], "sunrise": sun.get_sunrise_time(date_time, timezone).time(), "sunset": sun.get_sunset_time(date_time, timezone).time()}
+    return organised_forecast
+
+def remove_missing(organised_forecast):
+    # remove entries that have missing data, for some reason openweathermap include a 6th day in a 5 day forecast which has missing data
+    items_to_remove = []
+    for date, date_dict in organised_forecast.items():
+        if len(date_dict["weather_data"]) < 8:
+            items_to_remove.append(date)
+    for item in items_to_remove:
+        organised_forecast.pop(item)
+    return organised_forecast
+
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    json = request_weather()
+    x = extract_data(json)
+    y = remove_missing(x)
+
+
+    #dt = datetime.datetime.utcnow()
+    # tz = pytz.timezone("Europe/London")
+    # lat = 51.529
+    # long = -3.191
+    #sun = Sun(51.529, -3.191)
+    #td = datetime.timedelta(hours=1)
+    #tz = datetime.timezone(td)
+    #dt3 = datetime.datetime(2024, 4, 12, 14, 38, 00, 00)
+    #dt2 = dt3.astimezone(tz)
+    #print(dt2)
+    #print(tz)
+    #print(sun.get_sunrise_time(dt, tz)) 
+
