@@ -9,7 +9,7 @@ def request_weather():
     BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?"
     LAT = "51.529"
     LON = "-3.191"
-    url = BASE_URL + "lat=" + LAT + "&lon=" + LON + "&appid=" + "546daeb0010a1b81043ca194bb2d0082"
+    url = BASE_URL + "lat=" + LAT + "&lon=" + LON + "&appid=" + ""
     json_response = requests.get(url).json()
     return json_response
 
