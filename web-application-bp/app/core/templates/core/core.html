@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheet.css') }}"/>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('core_bp.static', filename='stylesheet.css') }}"/>
         {% block head %}{% endblock %}
     </head>
     <body>
@@ -33,6 +33,6 @@
                 {% block content %}{% endblock %}
             </div>  
         </div>
-        <script type="text/javascript" src="{{ url_for('static', filename='javascript.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('core_bp.static', filename='javascript.js') }}"></script>
     </body>
 </html>
