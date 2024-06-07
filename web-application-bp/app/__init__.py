@@ -1,5 +1,9 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+
+
+db = SQLAlchemy()
 
 
 def create_app():
@@ -25,7 +29,6 @@ def create_app():
     # import jobs so tasks execute
     from app.core import jobs
     # create database instance, import User for user loader
-    from app.core.models import db, User, WaterStatus
     db.init_app(app)
     # create login manager instance
     login_manager = LoginManager()
@@ -33,11 +36,14 @@ def create_app():
     login_manager.init_app(app)
 
     # required to check user is authenticated
+    from app.auth.models import User
+
     @login_manager.user_loader
     def load_user(id):
         return User.query.get(int(id))
 
     # create tables based on models
+    from app.water.models import WaterStatus
     with app.app_context():
         db.create_all()
         # REPLACE WITH JUST A VARIABLE AND IMPORT?? EASIER THAN DB
