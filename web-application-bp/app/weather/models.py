@@ -1,16 +1,8 @@
-from flask_login import UserMixin
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-
-
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(32), unique=True)
-    password = db.Column(db.String(256))
+from app import db
 
 
 class Weather(db.Model):
+    __bind_key__ = "weather"
     id = db.Column(db.Integer, primary_key=True)
     day_id = db.Column(db.Integer, db.ForeignKey("day.id"))
     time = db.Column(db.Time)
@@ -20,21 +12,17 @@ class Weather(db.Model):
     rain_probability = db.Column(db.Integer)
     rain_volume_mm = db.Column(db.Integer)
 
+    def __repr__(self):
+        return f"<Weather: {self.day_id}>"
+
 
 class Day(db.Model):
+    __bind_key__ = "weather"
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date)
     sunrise = db.Column(db.Time)
     sunset = db.Column(db.Time)
     weather = db.relationship("Weather", backref="day", cascade="all, delete-orphan")
 
-
-class Water(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    start_date_time = db.Column(db.DateTime)
-    duration = db.Column(db.Integer)
-
-
-class WaterStatus(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.Boolean)
+    def __repr__(self):
+        return f"<Day: {self.date}>"
