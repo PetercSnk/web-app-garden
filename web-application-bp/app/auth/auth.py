@@ -1,7 +1,7 @@
 from flask import render_template, request, flash, redirect, url_for
 from werkzeug.security import check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
-from app.core.models import User
+from app.auth.models import User
 from app.auth import auth_bp
 
 
@@ -14,7 +14,7 @@ def login():
         if user is not None and check_password_hash(user.password, password):
             flash("Logged In", category="success")
             login_user(user, remember=True)
-            return redirect(url_for("auth_bp.home"))
+            return redirect(url_for("weather_bp.index"))
         else:
             flash("Error", category="error")
     return render_template("auth/login.html", user=current_user)

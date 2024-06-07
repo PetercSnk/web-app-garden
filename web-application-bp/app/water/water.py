@@ -1,6 +1,7 @@
 from flask import render_template, request, flash
 from flask_login import login_required, current_user
-from app.core.models import Water, WaterStatus, db
+from app.water.models import Water, WaterStatus
+from app import db
 from app.core.extensions import event, executor
 from datetime import datetime
 import time

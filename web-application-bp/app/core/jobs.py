@@ -1,4 +1,5 @@
-from app.core.models import db, Weather, Day
+from app.weather.models import Weather, Day
+from app import db
 from app.core.extensions import scheduler
 import datetime
 from suntime import Sun

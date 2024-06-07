@@ -1,6 +1,6 @@
 from flask import render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
-from app.core.models import Weather, Day
+from app.weather.models import Weather, Day
 from datetime import datetime
 from app.core import jobs
 from app.weather import weather_bp
@@ -13,15 +13,15 @@ def index():
     db_today = Day.query.filter(Day.date == today).one()
     if db_today:
         # redirect to todays id if it exists in db
-        return redirect(url_for("routes.weather", day_id=db_today.id))
+        return redirect(url_for("weather.weather", day_id=db_today.id))
     else:
         db_first = Day.query.first()
         if db_first:
             # redirect to some other id that exists if today is not in db
-            return redirect(url_for("routes.weather", day_id=db_first.id))
+            return redirect(url_for("weather.weather", day_id=db_first.id))
         else:
             # if nothing exists in db redirect to /0
-            return redirect(url_for("routes.weather", day_id=0))
+            return redirect(url_for("weather.weather", day_id=0))
 
 
 @weather_bp.route("/<int:day_id>", methods=["GET", "POST"])
@@ -31,7 +31,7 @@ def weather(day_id):
         if "get-weather" in request.form:
             msg = jobs.get_weather()
             flash(msg, category="info")
-            return redirect(url_for("routes.weather", day_id=day_id))
+            return redirect(url_for("weather.weather", day_id=day_id))
     else:
         db_days = Day.query.order_by(Day.date).all()
         if day_id > 0:
