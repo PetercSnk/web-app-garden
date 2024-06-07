@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash
+from flask import render_template, request, flash
 from flask_login import login_required, current_user
 from app.core.models import Water, WaterStatus, db
 from app.core.extensions import event, executor
@@ -6,8 +6,7 @@ from datetime import datetime
 import time
 # from .pump import Pump
 # from .valve import Valve
-
-water_bp = Blueprint("water_bp", __name__, template_folder="templates", static_folder="base/static")
+from app.water import water_bp
 
 
 @water_bp.route("/", methods=["GET", "POST"])

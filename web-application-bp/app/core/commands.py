@@ -1,6 +1,7 @@
 from werkzeug.security import generate_password_hash
-from core.models import db, User
+from app.core.models import db, User
 import click
+
 
 @click.command()
 @click.argument("username")

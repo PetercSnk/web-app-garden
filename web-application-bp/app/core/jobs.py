@@ -91,7 +91,7 @@ def add_to_db(organised_forecast):
                 day = Day(date=date, sunrise=data["sunrise"], sunset=data["sunset"])
                 dates_added.append(date.strftime("%d/%m/%y"))
                 for weather_data in data["weather_data"]:
-                    weather = Weather(time = weather_data["time"], temperature_c = weather_data["temperature_c"], humidity = weather_data["humidity"], description = weather_data["description"], rain_probability = weather_data["rain_probability"], rain_volume_mm = weather_data["rain_volume_mm"])
+                    weather = Weather(time=weather_data["time"], temperature_c=weather_data["temperature_c"], humidity=weather_data["humidity"], description=weather_data["description"], rain_probability=weather_data["rain_probability"], rain_volume_mm=weather_data["rain_volume_mm"])
                     day.weather.append(weather)
                 db.session.add(day)
         db.session.commit()

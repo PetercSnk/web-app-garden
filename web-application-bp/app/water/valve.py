@@ -1,6 +1,7 @@
 import time
 import RPi.GPIO as GPIO
 
+
 class Valve:
     def __init__(self, relay, switch):
         self.relay = relay
@@ -8,7 +9,7 @@ class Valve:
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.relay, GPIO.OUT)
         GPIO.setup(self.switch, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    
+
     def valve_on(self):
         high = False
         low = False

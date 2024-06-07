@@ -1,17 +1,16 @@
-from flask import render_template, Blueprint, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
 from app.core.models import Weather, Day
 from datetime import datetime
 from app.core import jobs
-
-weather_bp = Blueprint("weather_bp", __name__, template_folder="templates", static_folder="base/static")
+from app.weather import weather_bp
 
 
 @weather_bp.route("/", methods=["GET"])
 @login_required
 def index():
     today = datetime.now().date()
-    db_today = Day.query.filter(Day.date==today).one()
+    db_today = Day.query.filter(Day.date == today).one()
     if db_today:
         # redirect to todays id if it exists in db
         return redirect(url_for("routes.weather", day_id=db_today.id))
@@ -43,8 +42,8 @@ def weather(day_id):
 
 
 def format_for_graph(day_id):
-    day = Day.query.filter(Day.id==day_id).one()
-    weather = Weather.query.filter(Weather.day_id==day.id).order_by(Weather.time).all()
+    day = Day.query.filter(Day.id == day_id).one()
+    weather = Weather.query.filter(Weather.day_id == day.id).order_by(Weather.time).all()
     labels, temperature_c, humidity, rain_probability, rain_volume_mm = [], [], [], [], []
     for three_hour_step in weather:
         labels.append(f"{three_hour_step.time.strftime('%H:%M')} {three_hour_step.description.title()}")

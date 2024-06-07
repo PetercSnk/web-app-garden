@@ -1,5 +1,5 @@
-import time
 import RPi.GPIO as GPIO
+
 
 class Pump:
     def __init__(self, relay):

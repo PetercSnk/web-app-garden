@@ -1,9 +1,8 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, url_for
 from werkzeug.security import check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
 from app.core.models import User
-
-auth_bp = Blueprint("auth_bp", __name__, template_folder="templates", static_folder="base/static")
+from app.auth import auth_bp
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -15,10 +14,10 @@ def login():
         if user is not None and check_password_hash(user.password, password):
             flash("Logged In", category="success")
             login_user(user, remember=True)
-            return redirect(url_for("routes.home"))
+            return redirect(url_for("auth_bp.home"))
         else:
             flash("Error", category="error")
-    return render_template("login.html", user=current_user)
+    return render_template("auth/login.html", user=current_user)
 
 
 @auth_bp.route("/logout")

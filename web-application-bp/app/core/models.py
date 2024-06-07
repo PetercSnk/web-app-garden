@@ -3,10 +3,12 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), unique=True)
     password = db.Column(db.String(256))
+
 
 class Weather(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -18,6 +20,7 @@ class Weather(db.Model):
     rain_probability = db.Column(db.Integer)
     rain_volume_mm = db.Column(db.Integer)
 
+
 class Day(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date)
@@ -25,10 +28,12 @@ class Day(db.Model):
     sunset = db.Column(db.Time)
     weather = db.relationship("Weather", backref="day", cascade="all, delete-orphan")
 
+
 class Water(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_date_time = db.Column(db.DateTime)
     duration = db.Column(db.Integer)
+
 
 class WaterStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
