@@ -17,7 +17,7 @@ def create_app():
     from app.auth import auth_bp
     from app.water import water_bp
     from app.weather import weather_bp
-    app.register_blueprint(core_bp, url_prefix="/core")
+    app.register_blueprint(core_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(water_bp, url_prefix="/water")
     app.register_blueprint(weather_bp, url_prefix="/weather")
