@@ -11,79 +11,81 @@
                 <button type="submit" class="normal-btn" name="get-weather">Get Weather</button>
             </form>
         </div>
-        <h4>Date: {{ format_date(date) }} Sunrise: {{ sunrise }} Sunset: {{ sunset }}</h4>
-        <div class="get-day-btns">
-            {% for day in db_days %}
-                <a class="nav-item" href="/weather/{{ day.id }}">{{ format_date(day.date) }}</a>
-            {% endfor %}
-        </div>
-        <div class="graph">
-            <canvas id="graph-canvas" width="900" height="500"></canvas>
-            <script>
-                var ctx = document.getElementById("graph-canvas").getContext("2d");
-                var temperature_c = {{ temperature_c | safe }}
-                var humidity = {{ humidity | safe }}
-                var rain_probability = {{ rain_probability | safe }}
-                var rain_volume_mm = {{ rain_volume_mm | safe }}
-                var labels = {{ labels | safe }}
-                var my_chart = new Chart(ctx, {
-                    type: "line",
-                    data: {
-                        labels: labels,
-                        datasets: []
-                    },
-                    options: {
-                        response: true,
-                    }
-                });
-                var data = [
-                    {
-                        label: "Temperature",
-                        data: temperature_c,
-                        borderColor: "rgb(205, 92, 92)",
-                        backgroundColor: "rgb(205, 92, 92)"
-                    },
-                    {
-                        label: "Humidity",
-                        data: humidity,
-                        borderColor: "rgb(254, 186, 79)",
-                        backgroundColor: "rgb(254, 186, 79)"
-                    },
-                    {
-                        label: "Rain Probability",
-                        data: rain_probability,
-                        borderColor: "rgb(108, 160, 220)",
-                        backgroundColor: "rgb(108, 160, 220)"
-                    },
-                    {
-                        label: "Rain Volume",
-                        data: rain_volume_mm,
-                        borderColor: "rgb(137, 207, 240)",
-                        backgroundColor: "rgb(137, 207, 240)"
-                    }
-                ];
-                function addHideData(value) {
-                    const array = my_chart.data.datasets.map((dataset, index) => {
-                        return dataset.label
+        {% if render %}
+            <h4>Date: {{ format_date(date) }} Sunrise: {{ sunrise }} Sunset: {{ sunset }}</h4>
+            <div class="get-day-btns">
+                {% for day in db_days %}
+                    <a class="nav-item" href="/weather/{{ day.id }}">{{ format_date(day.date) }}</a>
+                {% endfor %}
+            </div>
+            <div class="graph">
+                <canvas id="graph-canvas" width="900" height="500"></canvas>
+                <script>
+                    var ctx = document.getElementById("graph-canvas").getContext("2d");
+                    var temperature_c = {{ temperature_c | safe }}
+                    var humidity = {{ humidity | safe }}
+                    var rain_probability = {{ rain_probability | safe }}
+                    var rain_volume_mm = {{ rain_volume_mm | safe }}
+                    var labels = {{ labels | safe }}
+                    var my_chart = new Chart(ctx, {
+                        type: "line",
+                        data: {
+                            labels: labels,
+                            datasets: []
+                        },
+                        options: {
+                            response: true,
+                        }
                     });
-                    if (array.indexOf(data[value].label) > -1){
-                        my_chart.data.datasets.splice(array.indexOf(data[value].label), 1);
-                    } else {
-                        my_chart.data.datasets.push(data[value]);
+                    var data = [
+                        {
+                            label: "Temperature",
+                            data: temperature_c,
+                            borderColor: "rgb(205, 92, 92)",
+                            backgroundColor: "rgb(205, 92, 92)"
+                        },
+                        {
+                            label: "Humidity",
+                            data: humidity,
+                            borderColor: "rgb(254, 186, 79)",
+                            backgroundColor: "rgb(254, 186, 79)"
+                        },
+                        {
+                            label: "Rain Probability",
+                            data: rain_probability,
+                            borderColor: "rgb(108, 160, 220)",
+                            backgroundColor: "rgb(108, 160, 220)"
+                        },
+                        {
+                            label: "Rain Volume",
+                            data: rain_volume_mm,
+                            borderColor: "rgb(137, 207, 240)",
+                            backgroundColor: "rgb(137, 207, 240)"
+                        }
+                    ];
+                    function addHideData(value) {
+                        const array = my_chart.data.datasets.map((dataset, index) => {
+                            return dataset.label
+                        });
+                        if (array.indexOf(data[value].label) > -1){
+                            my_chart.data.datasets.splice(array.indexOf(data[value].label), 1);
+                        } else {
+                            my_chart.data.datasets.push(data[value]);
+                        }
+                        my_chart.update();
                     }
-                    my_chart.update();
-                }
-                addHideData(0);
-                addHideData(1);
-                addHideData(2);
-                addHideData(3);
-            </script>
-        </div>
-        <div class="graph-btns">
-            <button class="multi-btn" onclick="addHideData(0)">Temperature (&#x2103)</button>
-            <button class="multi-btn" onclick="addHideData(1)">Humidity (%)</button>
-            <button class="multi-btn" onclick="addHideData(2)">Rain Probability (%)</button>
-            <button class="multi-btn" onclick="addHideData(3)">Rain Volume (mm)</button>
-        </div>
+                    addHideData(0);
+                    addHideData(1);
+                    addHideData(2);
+                    addHideData(3);
+                </script>
+            </div>
+            <div class="graph-btns">
+                <button class="multi-btn" onclick="addHideData(0)">Temperature (&#x2103)</button>
+                <button class="multi-btn" onclick="addHideData(1)">Humidity (%)</button>
+                <button class="multi-btn" onclick="addHideData(2)">Rain Probability (%)</button>
+                <button class="multi-btn" onclick="addHideData(3)">Rain Volume (mm)</button>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
