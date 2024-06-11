@@ -4,6 +4,7 @@ from app.core.extensions import scheduler
 import datetime
 from suntime import Sun
 import requests
+from app.weather.config import Config
 
 
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
@@ -28,12 +29,9 @@ def kelvin_to_celsius(kelvin):
 
 
 def request_weather():
-    BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?"
-    with open("api", "r") as f:
-        API_KEY = f.read()
     LAT = "51.529"
     LON = "-3.191"
-    url = BASE_URL + "lat=" + LAT + "&lon=" + LON + "&appid=" + API_KEY
+    url = Config.BASE_URL + "lat=" + LAT + "&lon=" + LON + "&appid=" + Config.API_KEY
     request = requests.get(url)
     return request.status_code, request.reason, request.ok, request.json()
 
