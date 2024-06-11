@@ -11,9 +11,9 @@
             {% if user.is_authenticated %}
                 <nav class="navbar">
                     <div>
-                        <a class="nav-item" id="home" href="/">Home</a>
-                        <a class="nav-item" id="water" href="/water">Water</a>
-                        <a class="nav-item" id="logout" href="/logout">Log Out</a>
+                        <a class="nav-item" id="home" href="{{ url_for('weather_bp.index') }}">Home</a>
+                        <a class="nav-item" id="water" href="{{ url_for('water_bp.index') }}">Water</a>
+                        <a class="nav-item" id="logout" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
                     </div>
                 </nav>
             {% endif %}

@@ -12,7 +12,7 @@ from app.water import water_bp
 
 @water_bp.route("/", methods=["GET", "POST"])
 @login_required
-def water():
+def index():
     water_status = WaterStatus.query.one()
     if request.method == "POST":
         if "wtime" in request.form:
@@ -23,7 +23,7 @@ def water():
                 water_status.status = True
                 db.session.add(Water(start_date_time=datetime.now(), duration=water_time))
                 db.session.commit()
-                executor.submit(water_event, water_time)
+                executor.submit(water, water_time)
                 flash("Started Process", category="success")
         elif "fstop" in request.form:
             if water_status.status:
@@ -33,10 +33,10 @@ def water():
                 flash("Stopped Process", category="error")
             else:
                 flash("Not Running", category="error")
-    return render_template("water.html", user=current_user, status=water_status.status)
+    return render_template("water/water.html", user=current_user, status=water_status.status)
 
 
-def water_event(water_time):
+def water(water_time):
     water_status = WaterStatus.query.one()
     # pump_relay = 16
     # valve_relay = 18
