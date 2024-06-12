@@ -27,7 +27,7 @@ def create_app():
     extensions.scheduler.init_app(app)
     extensions.scheduler.start()
     # import jobs so tasks execute
-    from app.core import jobs
+    from app.weather import jobs
     # create database instance, import User for user loader
     db.init_app(app)
     # create login manager instance

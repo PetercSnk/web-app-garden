@@ -2,8 +2,7 @@ from flask import render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
 from app.weather.models import Weather, Day
 from datetime import datetime
-from app.core import jobs
-from app.weather import weather_bp
+from app.weather import weather_bp, jobs
 
 
 @weather_bp.route("/", methods=["GET", "POST"])
