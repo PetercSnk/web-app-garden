@@ -29,9 +29,7 @@ def kelvin_to_celsius(kelvin):
 
 
 def request_weather():
-    LAT = "51.529"
-    LON = "-3.191"
-    url = Config.BASE_URL + "lat=" + LAT + "&lon=" + LON + "&appid=" + Config.API_KEY
+    url = Config.BASE_URL + "lat=" + Config.LAT + "&lon=" + Config.LON + "&appid=" + Config.API_KEY
     request = requests.get(url)
     return request.status_code, request.reason, request.ok, request.json()
 
@@ -60,7 +58,7 @@ def extract_data(json):
             weather_data["rain_volume_mm"] = three_hour_step["rain"]["3h"]
         else:
             weather_data["rain_volume_mm"] = 0
-        # date is used as key within organised_forecast, its value is another dictionary containing a list of three hourly weather data, and the time of sunrise and sunset for that day
+        # store all three houlry weather data, sunrise, and sunset under its date in organised forecast
         date = date_time.date()
         if date in organised_forecast:
             organised_forecast[date]["weather_data"].append(weather_data)
@@ -72,12 +70,12 @@ def extract_data(json):
 
 def remove_missing(organised_forecast):
     # remove entries that have missing data, for some reason openweathermap include a 6th day in a 5 day forecast which has missing data
-    items_to_remove = []
+    dates_to_remove = []
     for date, data in organised_forecast.items():
         if len(data["weather_data"]) < 8:
-            items_to_remove.append(date)
-    for item in items_to_remove:
-        organised_forecast.pop(item)
+            dates_to_remove.append(date)
+    for date in dates_to_remove:
+        organised_forecast.pop(date)
     return organised_forecast
 
 
