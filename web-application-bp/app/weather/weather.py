@@ -19,7 +19,7 @@ def index():
             # redirect to some other id that exists if today is not in db
             return redirect(url_for("weather_bp.graph", day_id=db_first.id))
         else:
-            # if nothing exists in db redirect with any value for day_id, the graph wont render regardless
+            # if nothing exists in db redirect with any value for day_id, the graph won't render regardless due to check in graph function
             return redirect(url_for("weather_bp.graph", day_id=0))
 
 
@@ -37,6 +37,7 @@ def graph(day_id):
             date, sunrise, sunset, labels, temperature_c, humidity, rain_probability, rain_volume_mm = format(day_id)
             return render_template("weather/weather.html", render=True, user=current_user, db_days=db_days, date=date, sunrise=sunrise, sunset=sunset, labels=labels, temperature_c=temperature_c, humidity=humidity, rain_probability=rain_probability, rain_volume_mm=rain_volume_mm)
         else:
+            flash("No Data", category="info")
             return render_template("weather/weather.html", render=False, user=current_user)
 
 
