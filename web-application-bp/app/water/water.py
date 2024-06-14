@@ -13,7 +13,7 @@ from app.water import water_bp
 @water_bp.route("/", methods=["GET", "POST"])
 @login_required
 def index():
-    water_status = WaterStatus.query.one()
+    water_status = WaterStatus.query.first()
     if request.method == "POST":
         if "wtime" in request.form:
             if water_status.status:
@@ -37,7 +37,6 @@ def index():
 
 
 def water(water_time):
-    water_status = WaterStatus.query.one()
     # pump_relay = 16
     # valve_relay = 18
     # valve_switch = 12
@@ -54,6 +53,7 @@ def water(water_time):
             return
     # valve.valve_off()
     # pump.pump_off()
+    water_status = WaterStatus.query.first()
     water_status.status = False
     db.session.commit()
     return
