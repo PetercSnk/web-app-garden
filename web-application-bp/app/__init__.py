@@ -49,20 +49,14 @@ def create_app():
     # water module setup
     from app.water import water_bp
     app.register_blueprint(water_bp, url_prefix="/water")
-    water_status = False
-    # from app.water.models import WaterStatus
-    #     # REPLACE WITH JUST A VARIABLE AND IMPORT?? EASIER THAN DB
-    #     water_status = WaterStatus.query.first()
-    #     if not water_status:
-    #         db.session.add(WaterStatus(status=False))
-    #         db.session.commit()
-    #     # incase of restart during water
-    #     water_status = WaterStatus.query.one()
-    #     water_status.status = False
-    #     db.session.commit()
-
-    # command for creating a user account
-    # MAKE THIS A REGISTER PAGE INSTEAD OF COMMAND
+    from app.water.models import WaterStatus
+    with app.app_context():
+        water_status = WaterStatus.query.first()
+        if not water_status:
+            db.session.add(WaterStatus(status=False))
+        else:
+            water_status.status = False
+        db.session.commit()
 
     # from .pump import Pump
     # from .valve import Valve
