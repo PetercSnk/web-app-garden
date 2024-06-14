@@ -5,7 +5,7 @@ from datetime import datetime
 from app.weather import weather_bp, jobs
 
 
-@weather_bp.route("/", methods=["GET", "POST"])
+@weather_bp.route("/", methods=["GET"])
 @login_required
 def index():
     today = datetime.now().date()
@@ -19,8 +19,8 @@ def index():
             # redirect to some other id that exists if today is not in db
             return redirect(url_for("weather_bp.graph", day_id=db_first.id))
         else:
-            # if nothing exists in db redirect with day_id as None
-            return render_template("weather/weather.html", render=False, user=current_user)
+            # if nothing exists in db redirect with any value for day_id, the graph wont render regardless
+            return redirect(url_for("weather_bp.graph", day_id=0))
 
 
 @weather_bp.route("/<int:day_id>", methods=["GET", "POST"])
