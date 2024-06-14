@@ -1,14 +1,14 @@
-from werkzeug.security import generate_password_hash
 from app import db
-from app.auth.models import User
 import click
 
 
 @click.command()
-@click.argument("username")
-@click.argument("password")
-def create_user(username, password):
-    """Create user account."""
-    user = User(username=username, password=generate_password_hash(password, method="sha256"))
-    db.session.add(user)
-    db.session.commit()
+def init_db():
+    """Create databases"""
+    db.create_all()
+
+
+@click.command()
+def drop_db():
+    """Delete databases"""
+    db.drop_all()
