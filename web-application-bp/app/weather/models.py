@@ -1,6 +1,18 @@
 from app import db
 
 
+class Day(db.Model):
+    __bind_key__ = "weather"
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date)
+    sunrise = db.Column(db.Time)
+    sunset = db.Column(db.Time)
+    weather = db.relationship("Weather", backref="day", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Day: {self.date}>"
+
+
 class Weather(db.Model):
     __bind_key__ = "weather"
     id = db.Column(db.Integer, primary_key=True)
@@ -14,15 +26,3 @@ class Weather(db.Model):
 
     def __repr__(self):
         return f"<Weather: {self.day_id}>"
-
-
-class Day(db.Model):
-    __bind_key__ = "weather"
-    id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date)
-    sunrise = db.Column(db.Time)
-    sunset = db.Column(db.Time)
-    weather = db.relationship("Weather", backref="day", cascade="all, delete-orphan")
-
-    def __repr__(self):
-        return f"<Day: {self.date}>"
