@@ -23,7 +23,7 @@ def index():
                 water_status.status = True
                 db.session.add(Water(start_date_time=datetime.now(), duration=water_time))
                 db.session.commit()
-                executor.submit(water, water_time)
+                water.submit(water_time)
                 flash("Started Process", category="success")
         elif "fstop" in request.form:
             if water_status.status:
@@ -36,6 +36,7 @@ def index():
     return render_template("water/water.html", user=current_user, status=water_status.status)
 
 
+@executor.job
 def water(water_time):
     # valve = Valve()
     # pump = Pump()
