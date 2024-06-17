@@ -30,7 +30,7 @@ def graph(day_id):
         if "get-weather" in request.form:
             msg = jobs.get_weather()
             flash(msg, category="info")
-            return redirect(url_for("weather_bp.index"))
+            return redirect(url_for("weather_bp.graph", day_id=day_id))
     elif request.method == "GET":
         db_days = Day.query.order_by(Day.date).all()
         if day_id in [db_day.id for db_day in db_days]:
