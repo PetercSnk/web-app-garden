@@ -43,8 +43,10 @@ def create_app():
         return User.query.get(int(id))
 
     # weather module setup
-    from app.weather import weather_bp, jobs
+    from app.weather import weather_bp
     app.register_blueprint(weather_bp, url_prefix="/weather")
+    from app.weather import commands as weather_cmds
+    app.cli.add_command(weather_cmds.drop_day)
 
     # water module setup
     from app.water import water_bp
@@ -60,11 +62,8 @@ def create_app():
 
     # from .pump import Pump
     # from .valve import Valve
-    # pump_relay = 16
-    # valve_relay = 18
-    # valve_switch = 12
-    # valve = Valve(valve_relay, valve_switch)
-    # pump = Pump(pump_relay)
+    # valve = Valve()
+    # pump = Pump()
     # valve.valve_off()
     # pump.pump_off()
 
