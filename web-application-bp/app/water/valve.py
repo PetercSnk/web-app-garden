@@ -2,10 +2,10 @@ import time
 import RPi.GPIO as GPIO
 
 
-class Valve:
-    def __init__(self, relay, switch):
-        self.relay = relay
-        self.switch = switch
+class Valve(object):
+    def __init__(self):
+        self.relay = 18
+        self.switch = 12
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.relay, GPIO.OUT)
         GPIO.setup(self.switch, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -26,7 +26,7 @@ class Valve:
                 high = False
             elif high and low:
                 GPIO.output(self.relay, False)
-                return True
+                return
 
     def valve_off(self):
         high = False
@@ -44,4 +44,4 @@ class Valve:
                 low = False
             elif high and low:
                 GPIO.output(self.relay, False)
-                return True
+                return

@@ -37,11 +37,8 @@ def index():
 
 
 def water(water_time):
-    # pump_relay = 16
-    # valve_relay = 18
-    # valve_switch = 12
-    # valve = Valve(valve_relay, valve_switch)
-    # pump = Pump(pump_relay)
+    # valve = Valve()
+    # pump = Pump()
     # valve.valve_on()
     # pump.pump_on()
     for x in range(water_time):
