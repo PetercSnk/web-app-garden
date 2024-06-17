@@ -4,11 +4,11 @@ import click
 
 @click.command()
 def init_db():
-    """Create databases"""
+    """Create databases."""
     db.create_all()
 
 
 @click.command()
 def drop_db():
-    """Delete databases"""
+    """Delete databases."""
     db.drop_all()
