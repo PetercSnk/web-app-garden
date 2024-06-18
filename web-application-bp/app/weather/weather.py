@@ -9,15 +9,15 @@ from app.weather import weather_bp, jobs
 @login_required
 def index():
     today = datetime.now().date()
-    db_today = Day.query.filter(Day.date == today).first()
-    if db_today:
+    day = Day.query.filter(Day.date == today).first()
+    if day:
         # redirect to todays id if it exists in db
-        return redirect(url_for("weather_bp.graph", day_id=db_today.id))
+        return redirect(url_for("weather_bp.graph", day_id=day.id))
     else:
-        db_first = Day.query.first()
-        if db_first:
+        day = Day.query.first()
+        if day:
             # redirect to some other id that exists if today is not in db
-            return redirect(url_for("weather_bp.graph", day_id=db_first.id))
+            return redirect(url_for("weather_bp.graph", day_id=day.id))
         else:
             # if nothing exists in db redirect with any value for day_id, the graph won't render regardless due to check in graph function
             return redirect(url_for("weather_bp.graph", day_id=0))
@@ -32,10 +32,10 @@ def graph(day_id):
             flash(msg, category="info")
             return redirect(url_for("weather_bp.graph", day_id=day_id))
     elif request.method == "GET":
-        db_days = Day.query.order_by(Day.date).all()
-        if day_id in [db_day.id for db_day in db_days]:
+        days = Day.query.order_by(Day.date).all()
+        if day_id in [day.id for day in days]:
             date, sunrise, sunset, labels, temperature_c, humidity, rain_probability, rain_volume_mm = format(day_id)
-            return render_template("weather/weather.html", render=True, user=current_user, db_days=db_days, date=date, sunrise=sunrise, sunset=sunset, labels=labels, temperature_c=temperature_c, humidity=humidity, rain_probability=rain_probability, rain_volume_mm=rain_volume_mm)
+            return render_template("weather/weather.html", render=True, user=current_user, days=days, date=date, sunrise=sunrise, sunset=sunset, labels=labels, temperature_c=temperature_c, humidity=humidity, rain_probability=rain_probability, rain_volume_mm=rain_volume_mm)
         else:
             flash("No Data", category="info")
             return render_template("weather/weather.html", render=False, user=current_user)
