@@ -14,7 +14,7 @@
         {% if render %}
             <h4>Date: {{ format_date(date) }} Sunrise: {{ sunrise }} Sunset: {{ sunset }}</h4>
             <div class="get-day-btns">
-                {% for day in db_days %}
+                {% for day in days %}
                     <a class="nav-item" href="/weather/{{ day.id }}">{{ format_date(day.date) }}</a>
                 {% endfor %}
             </div>
