@@ -41,6 +41,7 @@ def water(water_status, water_time):
     water_status.status = True
     db.session.add(Water(start_date_time=datetime.now(), duration=water_time))
     db.session.commit()
+    a
     executor.app.logger.info(f"Watering for {water_time} seconds")
     print("START")
     loop(water_time)
