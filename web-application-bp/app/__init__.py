@@ -1,16 +1,28 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+import logging.config
+import os
+import yaml
 
 
 db = SQLAlchemy()
 
 
 def create_app():
+    # setup logging config before creating application object
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(basedir, "core", "logging.yaml")
+    with open(path, "rt") as f:
+        logging_config = yaml.safe_load(f.read())
+    logging.config.dictConfig(logging_config)
+
     # create and configure flask instance
     app = Flask(__name__)
     from app.core.config import Config
     app.config.from_object(Config)
+
+    app.logger = logging.getLogger("development")
 
     # initialise databases
     db.init_app(app)
