@@ -2,8 +2,8 @@ import RPi.GPIO as GPIO
 
 
 class Pump(object):
-    def __init__(self):
-        self.relay = 16
+    def __init__(self, relay):
+        self.relay = relay
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.relay, GPIO.OUT)
 

@@ -3,9 +3,9 @@ import RPi.GPIO as GPIO
 
 
 class Valve(object):
-    def __init__(self):
-        self.relay = 18
-        self.switch = 12
+    def __init__(self, relay, switch):
+        self.relay = relay
+        self.switch = switch
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.relay, GPIO.OUT)
         GPIO.setup(self.switch, GPIO.IN, pull_up_down=GPIO.PUD_UP)
