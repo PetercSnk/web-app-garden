@@ -30,7 +30,6 @@ def create_app():
 
     # initialise extensions
     from app.core import extensions
-    extensions.executor.init_app(app)
     extensions.scheduler.init_app(app)
     extensions.scheduler.start()
 
