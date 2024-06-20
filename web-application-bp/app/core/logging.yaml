@@ -11,12 +11,21 @@ handlers:
         level: DEBUG
         formatter: default
         stream: ext://flask.logging.wsgi_errors_stream
+    error_console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: default
+        stream: ext://sys.stderr
 
 loggers:
     development:
         level: DEBUG
         handlers: [wsgi]
-        propagate: no
+        propagate: False
+    gunicorn.error:
+        level: INFO
+        handlers: [error_console]
+        propagate: True
 
 root:
     level: DEBUG
