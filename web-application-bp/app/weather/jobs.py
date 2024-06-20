@@ -6,6 +6,7 @@ from suntime import Sun
 import requests
 from app.weather.config import Config
 import traceback
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 
 
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
@@ -33,7 +34,7 @@ def request_weather():
     try:
         url = Config.BASE_URL + "lat=" + Config.LAT + "&lon=" + Config.LON + "&appid=" + Config.API_KEY
         request = requests.get(url)
-        scheduler.app.logger.info(f"Request made to: {url}.")
+        scheduler.app.logger.debug(f"Request made to: {url}.")
         json = request.json()
         request.raise_for_status()
     except Exception as error:
@@ -89,7 +90,7 @@ def remove_missing(organised_forecast):
             remove_log.append(date.strftime("%d/%m/%y"))
     for date in remove:
         organised_forecast.pop(date)
-    scheduler.app.logger.info(f"Removed {remove_log} from organised forecast")
+    scheduler.app.logger.debug(f"Removed {remove_log} from organised forecast")
     return organised_forecast
 
 
@@ -106,7 +107,7 @@ def add_to_db(organised_forecast):
                     day.weather.append(weather)
                 db.session.add(day)
         db.session.commit()
-    scheduler.app.logger.info(f"Added {add_log} to database")
+    scheduler.app.logger.debug(f"Added {add_log} to database")
     return add_log
 
 
@@ -122,5 +123,13 @@ def delete_old_records():
                 delete_log.append(day.date.strftime("%d/%m/%y"))
                 db.session.delete(day)
             db.session.commit()
-    scheduler.app.logger.info(f"Deleted {delete_log} from database")
+    scheduler.app.logger.debug(f"Deleted {delete_log} from database")
     return
+
+
+def listener_callback(event):
+    with scheduler.app.app_context():
+        print(event)
+
+
+scheduler.add_listener(listener_callback, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
