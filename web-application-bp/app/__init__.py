@@ -22,7 +22,8 @@ def create_app():
     from app.core.config import Config
     app.config.from_object(Config)
 
-    app.logger = logging.getLogger("development")
+    if app.debug:
+        app.logger = logging.getLogger("development")
 
     # initialise databases
     db.init_app(app)
