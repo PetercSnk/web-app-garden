@@ -34,7 +34,7 @@ def request_weather():
     try:
         url = Config.BASE_URL + "lat=" + Config.LAT + "&lon=" + Config.LON + "&appid=" + Config.API_KEY
         request = requests.get(url)
-        scheduler.app.logger.debug(f"Request made to: {url}.")
+        scheduler.app.logger.debug(f"Request made to: {url}")
         json = request.json()
         request.raise_for_status()
     except Exception as error:
