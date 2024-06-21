@@ -7,6 +7,8 @@ from app.auth import auth_bp
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("weather_bp.index"))
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
