@@ -22,6 +22,7 @@ def create_app():
     from app.core.config import Config
     app.config.from_object(Config)
 
+    # set the applications logger
     if app.debug:
         app.logger = logging.getLogger("development")
 
@@ -72,11 +73,8 @@ def create_app():
             water_status.status = False
         db.session.commit()
 
-    # from .pump import Pump
-    # from .valve import Valve
-    # valve = Valve()
-    # pump = Pump()
-    # valve.valve_off()
-    # pump.pump_off()
+    # from app.water.systems import valve_obj, pump_obj
+    # valve_obj.valve_off()
+    # pump_obj.pump_off()
 
     return app
