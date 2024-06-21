@@ -1,4 +1,4 @@
-from flask import render_template, request, flash, current_app, url_for, redirect
+from flask import render_template, request, flash, current_app
 from flask_login import login_required, current_user
 from app.water.models import Water, WaterStatus
 from app import db
