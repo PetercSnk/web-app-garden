@@ -1,4 +1,4 @@
-from flask import render_template, request, flash, current_app
+from flask import render_template, flash, current_app
 from flask_login import login_required, current_user
 from app.water.models import Water, WaterStatus
 from app import db
@@ -8,31 +8,33 @@ import threading
 from datetime import datetime
 import time
 from app.water import water_bp
+from app.water.forms import WaterForm, CancelForm
 
 
 @water_bp.route("/", methods=["GET", "POST"])
 @login_required
 def index():
     water_status = WaterStatus.query.first()
-    if request.method == "POST":
-        if "water" in request.form:
-            if water_status.status:
-                flash("Already Runnning", category="error")
-            else:
-                water_time = int(request.form.get("water"))
-                # REPLACE None with valve_obj and pump_obj
-                thread = threading.Thread(target=water, args=(current_app._get_current_object(), water_time, None, None), daemon=True)
-                thread.start()
-                flash("Started Process", category="success")
-                return render_template("water/water.html", user=current_user, status=True)
-        elif "stop" in request.form:
-            if water_status.status:
-                event.set()
-                flash("Stopped Process", category="success")
-                return render_template("water/water.html", user=current_user, status=False)
-            else:
-                flash("Not Running", category="error")
-    return render_template("water/water.html", user=current_user, status=water_status.status)
+    water_form = WaterForm()
+    cancel_form = CancelForm()
+    if water_form.water_submit.data and water_form.validate():
+        if water_status.status:
+            flash("Already Runnning", category="error")
+        else:
+            water_time = water_form.water_time.data
+            # REPLACE None with valve_obj and pump_obj
+            thread = threading.Thread(target=water, args=(current_app._get_current_object(), water_time, None, None), daemon=True)
+            thread.start()
+            flash("Started Process", category="success")
+            return render_template("water/water.html", user=current_user, status=True, water_form=water_form, cancel_form=cancel_form)
+    elif cancel_form.cancel_submit.data and cancel_form.validate():
+        if water_status.status:
+            event.set()
+            flash("Stopped Process", category="success")
+            return render_template("water/water.html", user=current_user, status=False, water_form=water_form, cancel_form=cancel_form)
+        else:
+            flash("Not Running", category="error")
+    return render_template("water/water.html", user=current_user, status=water_status.status, water_form=water_form, cancel_form=cancel_form)
 
 
 def water(app, water_time, valve_obj, pump_obj):

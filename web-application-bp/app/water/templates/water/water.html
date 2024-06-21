@@ -4,14 +4,27 @@
 {% endblock %}
 {% block content %}
     <h1>Water</h1>
-    <form method="post">
-        <label for="wtime">Time (Seconds):</label>
-        <input type="number" id="water" name="water" required>
-        <button type="submit" class="normal-btn" name="water">Water</button>
+    <form action="" method="post">
+        {{ water_form.hidden_tag() }}
+        <p>
+            {{ water_form.water_time.label }}
+            {{ water_form.water_time }}
+            {% for error in water_form.water_time.errors %}
+                <span class="form-error"{{ error }}</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ water_form.water_submit() }}
+        </p>
     </form>
-    </br>
-    <form method="post">
-        <button type="submit" class="normal-btn" name="stop" value="stop">Force Stop</button>
+    <form action="" method="post">
+        {{ cancel_form.hidden_tag() }}
+        <p>
+            {{cancel_form.label }}
+        </p>
+        <p>
+            {{ cancel_form.cancel_submit() }}
+        </p>
     </form>
     <h4>Water Running Status: {{ status }}</h4>
 {% endblock %}
