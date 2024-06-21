@@ -11,6 +11,4 @@ class Config(object):
         "weather": "sqlite:///" + os.path.join(basedir, "weather", "instance", "weather.db"),
         "water": "sqlite:///" + os.path.join(basedir, "water", "instance", "water.db")
     }
-    EXECUTOR_TYPE = "thread"
-    EXECUTOR_PROPAGATE_EXCEPTIONS = True
     SCHEDULER_API_ENABLED = True
