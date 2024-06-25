@@ -6,23 +6,23 @@
     <h1>Login</h1>
     <h4>Enter your login details</h4>
     <form action="" method="post">
-        {{ form.hidden_tag() }}
+        {{ login_form.hidden_tag() }}
         <p>
-            {{ form.username.label }}
-            {{ form.username(size=16) }}
-            {% for error in form.username.errors %}
+            {{ login_form.username.label }}
+            {{ login_form.username(size=16) }}
+            {% for error in login_form.username.errors %}
                 <span class="form-error">{{ error }}</span>
             {% endfor %}
         </p>
         <p>
-            {{ form.password.label }}
-            {{ form.password(size=16) }}
-            {% for error in form.password.errors %}
+            {{ login_form.password.label }}
+            {{ login_form.password(size=16) }}
+            {% for error in login_form.password.errors %}
                 <span class="form-error">{{ error }}</span>
             {% endfor %}
         </p>
         <p>
-            {{ form.submit() }}
+            {{ login_form.submit() }}
         </p>
     </form>
 {% endblock %}
