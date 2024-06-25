@@ -7,9 +7,9 @@
     <form action="" method="post">
         {{ water_form.hidden_tag() }}
         <p>
-            {{ water_form.duration.label }}
-            {{ water_form.duration }}
-            {% for error in water_form.duration.errors %}
+            {{ water_form.duration_sec.label }}
+            {{ water_form.duration_sec }}
+            {% for error in water_form.duration_sec.errors %}
                 <span class="form-error"{{ error }}</span>
             {% endfor %}
         </p>
