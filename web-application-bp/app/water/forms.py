@@ -4,9 +4,9 @@ from wtforms.validators import DataRequired, NumberRange
 
 
 class WaterForm(FlaskForm):
-    water_time = IntegerField("Time (Seconds)", validators=[DataRequired(), NumberRange(min=30, max=300, message="Minimum: %(min)s, Maximum: %(max)s")])
-    water_submit = SubmitField("Water")
+    duration = IntegerField("Time (Seconds)", validators=[DataRequired(), NumberRange(min=30, max=300, message="Minimum: %(min)s, Maximum: %(max)s")])
+    submit = SubmitField("Water")
 
 
 class CancelForm(FlaskForm):
-    cancel_submit = SubmitField("Cancel")
+    submit = SubmitField("Cancel")

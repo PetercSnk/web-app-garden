@@ -17,19 +17,21 @@ def index():
     water_status = WaterStatus.query.first()
     water_form = WaterForm()
     cancel_form = CancelForm()
-    if water_form.water_submit.data and water_form.validate():
+    if water_form.submit.data and water_form.validate():
         if water_status.status:
             flash("Already Runnning", category="error")
         else:
-            water_time = water_form.water_time.data
+            duration = water_form.duration.data
             # REPLACE None with valve_obj and pump_obj
-            thread = threading.Thread(target=water, args=(current_app._get_current_object(), water_time, None, None), daemon=True)
+            thread = threading.Thread(target=water, args=(current_app._get_current_object(), duration, None, None), daemon=True)
             thread.start()
+            current_app.logger.debug("Started thread")
             flash("Started Process", category="success")
             return render_template("water/water.html", user=current_user, status=True, water_form=water_form, cancel_form=cancel_form)
-    elif cancel_form.cancel_submit.data and cancel_form.validate():
+    elif cancel_form.submit.data and cancel_form.validate():
         if water_status.status:
             event.set()
+            current_app.logger.debug("Event set")
             flash("Stopped Process", category="success")
             return render_template("water/water.html", user=current_user, status=False, water_form=water_form, cancel_form=cancel_form)
         else:
@@ -37,28 +39,30 @@ def index():
     return render_template("water/water.html", user=current_user, status=water_status.status, water_form=water_form, cancel_form=cancel_form)
 
 
-def water(app, water_time, valve_obj, pump_obj):
+def water(app, duration, valve_obj, pump_obj):
     with app.app_context():
         water_status = WaterStatus.query.first()
         water_status.status = True
-        db.session.add(Water(start_date_time=datetime.now(), duration=water_time))
+        db.session.add(Water(start_date_time=datetime.now(), duration=duration))
         db.session.commit()
-        app.logger.info(f"Watering for {water_time} seconds")
+        app.logger.debug(f"Water status set to {water_status.status}")
+        app.logger.info(f"Watering for {duration} seconds")
         # valve.valve_on()
         # pump.pump_on()
-        loop(app, water_time)
+        loop(app, duration)
         # valve.valve_off()
         # pump.pump_off()
         app.logger.info("Finished watering process")
         water_status.status = False
         db.session.commit()
+        app.logger.debug(f"Water status set to {water_status.status}")
     return
 
 
-def loop(app, water_time):
-    for x in range(water_time):
+def loop(app, duration):
+    for x in range(duration):
         time.sleep(1)
         if event.is_set():
-            app.logger.debug("Event set")
+            app.logger.debug("Loop stopped")
             event.clear()
             return

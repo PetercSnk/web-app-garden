@@ -7,14 +7,14 @@
     <form action="" method="post">
         {{ water_form.hidden_tag() }}
         <p>
-            {{ water_form.water_time.label }}
-            {{ water_form.water_time }}
-            {% for error in water_form.water_time.errors %}
+            {{ water_form.duration.label }}
+            {{ water_form.duration }}
+            {% for error in water_form.duration.errors %}
                 <span class="form-error"{{ error }}</span>
             {% endfor %}
         </p>
         <p>
-            {{ water_form.water_submit() }}
+            {{ water_form.submit() }}
         </p>
     </form>
     <form action="" method="post">
@@ -23,7 +23,7 @@
             {{cancel_form.label }}
         </p>
         <p>
-            {{ cancel_form.cancel_submit() }}
+            {{ cancel_form.submit() }}
         </p>
     </form>
     <h4>Water Running Status: {{ status }}</h4>
