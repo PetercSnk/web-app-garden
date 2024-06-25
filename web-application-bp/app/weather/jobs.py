@@ -1,10 +1,10 @@
-from app.weather.models import Weather, Day
-from app import db
 from app.core.extensions import scheduler
+from app.weather.models import Weather, Day
+from app.weather.config import Config
+from app import db
 import datetime
 from suntime import Sun
 import requests
-from app.weather.config import Config
 import traceback
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 
