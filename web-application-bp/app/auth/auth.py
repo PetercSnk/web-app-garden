@@ -1,9 +1,9 @@
 from flask import render_template, flash, redirect, url_for, current_app
-from werkzeug.security import check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
+from werkzeug.security import check_password_hash
 from app.auth.models import User
-from app.auth import auth_bp
 from app.auth.forms import LoginForm
+from app.auth import auth_bp
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
