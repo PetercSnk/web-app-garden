@@ -4,7 +4,7 @@ basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
 class Config(object):
-    SECRET_KEY = "GardenPi"
+    SECRET_KEY = os.urandom(12).hex()
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "core", "instance", "default.db")
     SQLALCHEMY_BINDS = {
         "users": "sqlite:///" + os.path.join(basedir, "auth", "instance", "users.db"),
