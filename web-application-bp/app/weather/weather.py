@@ -1,4 +1,4 @@
-from flask import render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from app.weather.models import Weather, Day
 from datetime import datetime
@@ -28,6 +28,7 @@ def index():
 def graph(day_id):
     if request.method == "POST":
         if "get-weather" in request.form:
+            current_app.logger.debug("Getting weather")
             msg = jobs.get_weather()
             flash(msg, category="info")
             return redirect(url_for("weather_bp.graph", day_id=day_id))

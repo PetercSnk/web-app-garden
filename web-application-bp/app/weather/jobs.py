@@ -34,11 +34,11 @@ def request_weather():
     try:
         url = Config.BASE_URL + "lat=" + Config.LAT + "&lon=" + Config.LON + "&appid=" + Config.API_KEY
         request = requests.get(url)
-        scheduler.app.logger.debug(f"Request made to: {url}")
+        scheduler.app.logger.debug(f"Request made to {url}")
         json = request.json()
         request.raise_for_status()
     except Exception as error:
-        scheduler.app.logger.error(f"A {type(error).__name__} has occured | {request.status_code} {request.reason} | Response: {json}")
+        scheduler.app.logger.error(f"A {type(error).__name__} has occured | {request.status_code} {request.reason} | Response {json}")
     return request.ok, json
 
 
@@ -90,7 +90,7 @@ def remove_missing(organised_forecast):
             remove_log.append(date.strftime("%d/%m/%y"))
     for date in remove:
         organised_forecast.pop(date)
-    scheduler.app.logger.debug(f"Removed {remove_log} from organised forecast")
+    scheduler.app.logger.debug(f"Dates {remove_log} contain missing data, removing")
     return organised_forecast
 
 
@@ -98,6 +98,7 @@ def add_to_db(organised_forecast):
     with scheduler.app.app_context():
         dates = [day.date for day in Day.query.order_by(Day.date).all()]
         add_log = []
+        exists_log = []
         for date, data in organised_forecast.items():
             if date not in dates:
                 day = Day(date=date, sunrise=data["sunrise"], sunset=data["sunset"])
@@ -106,7 +107,10 @@ def add_to_db(organised_forecast):
                     weather = Weather(time=weather_data["time"], temperature_c=weather_data["temperature_c"], humidity=weather_data["humidity"], description=weather_data["description"], rain_probability=weather_data["rain_probability"], rain_volume_mm=weather_data["rain_volume_mm"])
                     day.weather.append(weather)
                 db.session.add(day)
+            else:
+                exists_log.append(date.strftime("%d/%m/%y"))
         db.session.commit()
+    scheduler.app.logger.debug(f"Dates {exists_log} already exist in database")
     scheduler.app.logger.debug(f"Added {add_log} to database")
     return add_log
 
