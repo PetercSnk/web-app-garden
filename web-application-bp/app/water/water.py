@@ -2,7 +2,7 @@ from flask import render_template, flash, current_app
 from flask_login import login_required, current_user
 from app.core.extensions import event
 from app.water.models import Water, WaterStatus
-from app.water.forms import WaterForm, CancelForm
+from app.water.forms import WaterForm, CancelForm, AutoForm
 from app.water import water_bp
 from app import db
 import threading
@@ -17,6 +17,7 @@ def index():
     water_status = WaterStatus.query.first()
     water_form = WaterForm()
     cancel_form = CancelForm()
+    auto_form = AutoForm()
     if water_form.submit.data and water_form.validate():
         if water_status.status:
             flash("Already Runnning", category="error")
@@ -27,16 +28,18 @@ def index():
             thread.start()
             current_app.logger.debug("Started thread")
             flash("Started Process", category="success")
-            return render_template("water/water.html", user=current_user, status=True, water_form=water_form, cancel_form=cancel_form)
+            return render_template("water/water.html", user=current_user, status=True, water_form=water_form, cancel_form=cancel_form, auto_form=auto_form)
     elif cancel_form.submit.data and cancel_form.validate():
         if water_status.status:
             event.set()
             current_app.logger.debug("Event set")
             flash("Stopped Process", category="success")
-            return render_template("water/water.html", user=current_user, status=False, water_form=water_form, cancel_form=cancel_form)
+            return render_template("water/water.html", user=current_user, status=False, water_form=water_form, cancel_form=cancel_form, auto_form=auto_form)
         else:
             flash("Not Running", category="error")
-    return render_template("water/water.html", user=current_user, status=water_status.status, water_form=water_form, cancel_form=cancel_form)
+    elif auto_form.submit.data and auto_form.validate():
+        pass
+    return render_template("water/water.html", user=current_user, status=water_status.status, water_form=water_form, cancel_form=cancel_form, auto_form=auto_form)
 
 
 def water(app, duration_sec, valve_obj, pump_obj):
