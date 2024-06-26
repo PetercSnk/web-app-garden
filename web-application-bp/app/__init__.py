@@ -48,7 +48,9 @@ def create_app():
     from app.auth import commands as auth_cmds
     app.cli.add_command(auth_cmds.create_user)
     from app.auth.models import User
-    login_manager.login_view = "auth.login"
+    login_manager.login_view = "auth_bp.login"
+    login_manager.login_message = "Please login"
+    login_manager.login_message_category = "info"
     login_manager.init_app(app)
 
     @login_manager.user_loader
@@ -64,17 +66,5 @@ def create_app():
     # water module setup
     from app.water import water_bp
     app.register_blueprint(water_bp, url_prefix="/water")
-    from app.water.models import WaterStatus
-    with app.app_context():
-        water_status = WaterStatus.query.first()
-        if not water_status:
-            db.session.add(WaterStatus(status=False))
-        else:
-            water_status.status = False
-        db.session.commit()
-
-    # from app.water.systems import valve_obj, pump_obj
-    # valve_obj.valve_off()
-    # pump_obj.pump_off()
-
+    
     return app
