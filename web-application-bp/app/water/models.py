@@ -23,6 +23,7 @@ class WaterStatus(db.Model):
 class WaterAuto(db.Model):
     __bind_key__ = "water"
     id = db.Column(db.Integer, primary_key=True)
+    enabled = db.Column(db.Boolean)
     duration_sec = db.Column(db.Integer)
     min_wait_hr = db.Column(db.Integer)
     mode = db.Column(db.Integer)
