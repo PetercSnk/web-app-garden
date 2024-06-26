@@ -1,7 +1,9 @@
 from app import create_app
+#from app.water import restart
 import logging
 
 app = create_app()
+#restart.restart(app)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0")
