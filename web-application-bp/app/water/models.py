@@ -20,15 +20,16 @@ class WaterStatus(db.Model):
         return f"<WaterStatus: {self.status}>"
 
 
-class WaterAuto(db.Model):
+class WaterConfig(db.Model):
     __bind_key__ = "water"
     id = db.Column(db.Integer, primary_key=True)
     enabled = db.Column(db.Boolean)
     duration_sec = db.Column(db.Integer)
     min_wait_hr = db.Column(db.Integer)
     mode = db.Column(db.Integer)
-    time = db.Column(db.Time)
+    default = db.Column(db.Time)
     rain_reset = db.Column(db.Boolean)
+    estimate = db.Column(db.DateTime)
 
     def __repr__(self):
         return f"<WaterAuto: {self.id}"
