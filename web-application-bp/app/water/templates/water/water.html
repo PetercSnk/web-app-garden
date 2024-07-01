@@ -5,49 +5,49 @@
 {% block content %}
     <h1>Water</h1>
     <form action="" method="post">
-        {{ water_form.hidden_tag() }}
+        {{ forms["water"].hidden_tag() }}
         <p>
-            {{ water_form.duration_sec.label }}
-            {{ water_form.duration_sec }}
+            {{ forms["water"].duration_sec.label }}
+            {{ forms["water"].duration_sec }}
         </p>
         <p>
-            {{ water_form.submit() }}
-        </p>
-    </form>
-    <form action="" method="post">
-        {{ cancel_form.hidden_tag() }}
-        <p>
-            {{ cancel_form.submit() }}
+            {{ forms["water"].submit() }}
         </p>
     </form>
     <form action="" method="post">
-        {{ auto_form.hidden_tag() }} 
+        {{ forms["cancel"].hidden_tag() }}
         <p>
-            {{ auto_form.enabled.label }}
-            {{ auto_form.enabled }}
+            {{ forms["cancel"].submit() }}
+        </p>
+    </form>
+    <form action="" method="post">
+        {{ forms["config"].hidden_tag() }} 
+        <p>
+            {{ forms["config"].enabled.label }}
+            {{ forms["config"].enabled }}
         </p>
         <p>
-            {{ auto_form.duration_sec.label }}
-            {{ auto_form.duration_sec }}
+            {{ forms["config"].duration_sec.label }}
+            {{ forms["config"].duration_sec }}
         </p>
         <p>
-            {{ auto_form.min_wait_hr.label }}
-            {{ auto_form.min_wait_hr }}
+            {{ forms["config"].min_wait_hr.label }}
+            {{ forms["config"].min_wait_hr }}
         </p>
         <p>
-            {{ auto_form.mode.label }}
-            {{ auto_form.mode }}
+            {{ forms["config"].mode.label }}
+            {{ forms["config"].mode }}
         </p>
         <p>
-            {{ auto_form.time.label }}
-            {{ auto_form.time }}
+            {{ forms["config"].default.label }}
+            {{ forms["config"].default }}
         </p>
         <p>
-            {{ auto_form.rain_reset.label }}
-            {{ auto_form.rain_reset }}
+            {{ forms["config"].rain_reset.label }}
+            {{ forms["config"].rain_reset }}
         </p>
         <p>
-            {{ auto_form.submit() }}
+            {{ forms["config"].submit() }}
         </p>
     </form>
     <h4>Water Running Status: {{ status }}</h4>
