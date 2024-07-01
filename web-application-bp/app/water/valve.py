@@ -10,7 +10,7 @@ class Valve(object):
         GPIO.setup(self.relay, GPIO.OUT)
         GPIO.setup(self.switch, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-    def valve_on(self):
+    def on(self):
         high = False
         low = False
         GPIO.output(self.relay, True)
@@ -28,7 +28,7 @@ class Valve(object):
                 GPIO.output(self.relay, False)
                 return
 
-    def valve_off(self):
+    def off(self):
         high = False
         low = False
         GPIO.output(self.relay, True)

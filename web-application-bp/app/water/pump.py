@@ -7,10 +7,10 @@ class Pump(object):
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(self.relay, GPIO.OUT)
 
-    def pump_on(self):
+    def on(self):
         GPIO.output(self.relay, True)
         return
 
-    def pump_off(self):
+    def off(self):
         GPIO.output(self.relay, False)
         return

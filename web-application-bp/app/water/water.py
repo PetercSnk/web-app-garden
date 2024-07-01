@@ -1,7 +1,7 @@
 from flask import render_template, flash, current_app
 from flask_login import login_required, current_user
 from app.core.extensions import event
-from app.water.models import Water, WaterStatus, WaterConfig
+from app.water.models import History, Status, Config, Plant, Selected
 from app.water.forms import WaterForm, CancelForm, ConfigForm
 from app.water import water_bp
 from app import db
@@ -11,11 +11,18 @@ from datetime import datetime
 import time
 
 
+@water_bp.route("/configure/<int:plant_id>", methods=["GET", "POST"])
+@login_required
+def configure(plant_id):
+    plant = Plant.query.filter(Plant.id==plant_id).first()
+    return render_template("water/configure.html", user=current_user)
+
+
 @water_bp.route("/", methods=["GET", "POST"])
 @login_required
 def index():
-    water_status = WaterStatus.query.first()
-    config = WaterConfig.query.first()
+    water_status = Status.query.first()
+    config = Config.query.first()
     forms = {
         "water": WaterForm(),
         "cancel": CancelForm(),
@@ -55,7 +62,7 @@ def index():
             config.default = forms["config"].default.data
             config.rain_reset = forms["config"].rain_reset.data
         else:
-            new_config = WaterConfig(enabled=forms["config"].enabled.data,
+            new_config = Config(enabled=forms["config"].enabled.data,
                                      duration_sec=forms["config"].duration_sec.data,
                                      min_wait_hr=forms["config"].min_wait_hr.data,
                                      mode=forms["config"].mode.data,
@@ -63,7 +70,7 @@ def index():
                                      rain_reset=forms["config"].rain_reset.data)
             db.session.add(new_config)
         db.session.commit()
-    config = WaterConfig.query.first()
+    config = Config.query.first()
     return render_template("water/water.html",
                            user=current_user,
                            status=water_status.status,
@@ -73,9 +80,9 @@ def index():
 
 def water(app, duration_sec, valve_obj, pump_obj):
     with app.app_context():
-        water_status = WaterStatus.query.first()
+        water_status = Status.query.first()
         water_status.status = True
-        db.session.add(Water(start_date_time=datetime.now(), duration_sec=duration_sec))
+        db.session.add(History(start_date_time=datetime.now(), duration_sec=duration_sec))
         db.session.commit()
         app.logger.debug(f"Water status set to {water_status.status}")
         app.logger.info(f"Watering for {duration_sec} seconds")
