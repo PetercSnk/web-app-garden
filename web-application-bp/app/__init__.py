@@ -66,8 +66,9 @@ def create_app():
     # water module setup
     from app.water import water_bp
     app.register_blueprint(water_bp, url_prefix="/water")
-    from app.water.systems import valve_obj, pump_obj
+    #from app.water.systems import valve_obj, pump_obj
     from app.water.setup import plants_setup, systems_setup
-    plants_setup()
-    systems_setup([valve_obj, pump_obj])
+    with app.app_context():
+        plants_setup()
+    #systems_setup([valve_obj, pump_obj])
     return app
