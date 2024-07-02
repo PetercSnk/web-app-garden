@@ -19,7 +19,7 @@ class CancelForm(FlaskForm):
 
 
 class ConfigForm(FlaskForm):
-    enabled = BooleanField("Enable Automatic Watering", validators=[DataRequired()])
+    enabled = BooleanField("Enable Automatic Watering")
     duration_sec = IntegerField("Water Duration (Seconds)", validators=[DataRequired(), NumberRange(min=30, max=300, message="Minimum: %(min)s, Maximum: %(max)s")])
     min_wait_hr = IntegerField("Minimum Wait (Hours)", validators=[DataRequired()])
     mode = SelectField("Mode", choices=[(1, "Sunset"), (2, "Sunrise"), (3, "Default")], validators=[DataRequired()])

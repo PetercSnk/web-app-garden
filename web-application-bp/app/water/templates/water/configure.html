@@ -4,6 +4,10 @@
 {% endblock %}
 {% block content %}
     <h1>Configure</h1>
+    <p>{{ plant.name }}</p>
+    <p>{{ plant.description }}</p>
+    <div class="get-config-btns">
+        {% for plantx in plants %}
     <form action="" method="post">
         {{ plant_form.hidden_tag() }}
         <p>
@@ -11,8 +15,8 @@
             {{ plant_form.description }}
         </p>
         <p>
-            {{plant_form.description.label }}
-            {{plant_form.description }}
+            {{ plant_form.description.label }}
+            {{ plant_form.description }}
         <p>
             {{ plant_form.submit() }}
         </p>
@@ -22,26 +26,32 @@
         <p>
             {{ config_form.enabled.label }}
             {{ config_form.enabled }}
+            {{ plant.config.enabled }}
         </p>
         <p>
             {{ config_form.duration_sec.label }}
             {{ config_form.duration_sec }}
+            {{ plant.config.duration_sec }}
         </p>
         <p>
             {{ config_form.min_wait_hr.label }}
             {{ config_form.min_wait_hr }}
+            {{ plant.config.min_wait_hr }}
         </p>
         <p>
             {{ config_form.mode.label }}
             {{ config_form.mode }}
+            {{ plant.config.mode }}
         </p>
         <p>
             {{ config_form.default.label }}
             {{ config_form.default }}
+            {{ plant.config.default }}
         </p>
         <p>
             {{ config_form.rain_reset.label }}
             {{ config_form.rain_reset }}
+            {{ plant.config.rain_reset }}
         </p>
         <p>
             {{ config_form.submit() }}

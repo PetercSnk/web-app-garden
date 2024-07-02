@@ -1,24 +1,25 @@
 from app import db
 
 
-class Selected(db.Model):
-    __bind_key__ = "water"
-    id = db.Column(db.Integer, primary_key=True)
-    plant = db.relationship("Plant", backref="selected")
-
-
 class Plant(db.Model):
     __bind_key__ = "water"
     id = db.Column(db.Integer, primary_key=True)
-    selected_id = db.Column(db.Integer, db.ForeignKey("selected.id"))
     name = db.Column(db.String)
     description = db.Column(db.String)
     status = db.Column(db.Boolean)
+    system = db.relationship("System")
     history = db.relationship("History", backref="plant", cascade="all, delete-orphan")
     config = db.relationship("Config", backref="plant", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Plant: {self.name}>"
+
+
+class System(db.Model):
+    __bind_key__ = "water"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    obj = db.Column(db.PickleType)
 
 
 class History(db.Model):

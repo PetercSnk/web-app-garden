@@ -6,7 +6,7 @@ from app.water.forms import WaterForm, CancelForm, ConfigForm, PlantForm
 from app.water import water_bp
 from app import db
 import threading
-#from app.water.systems import valve_obj, pump_obj
+#from app.water.systems import objs
 from datetime import datetime
 import time
 
@@ -46,10 +46,13 @@ def configure(plant_id):
                                 rain_reset=config_form.rain_reset.data)
             db.session.add(new_config)
         db.session.commit()
+    plants = Plant.query.order_by(Plant.id).all()
     return render_template("water/configure.html",
                            user=current_user,
                            plant_form=plant_form,
-                           config_form=config_form)
+                           config_form=config_form,
+                           plants=plants,
+                           plant=plant)
 
 
 @water_bp.route("/water", methods=["GET"])
@@ -62,8 +65,7 @@ def water_index():
 @water_bp.route("/water/<int:plant_id>", methods=["GET", "POST"])
 @login_required
 def water(plant_id):
-    plant = Plant.query.first()
-    config = Config.query.first()
+    plant = Plant.query.filter(Plant.id == plant_id)
     water_form = WaterForm()
     cancel_form = CancelForm()
     if water_form.submit.data and water_form.validate():
@@ -71,8 +73,10 @@ def water(plant_id):
             flash("Already Runnning", category="error")
         else:
             duration_sec = water_form.duration_sec.data
-            # REPLACE None with valve_obj and pump_obj
-            thread = threading.Thread(target=water, args=(current_app._get_current_object(), duration_sec, None, None), daemon=True)
+            # REPLACE [] with objs
+            thread = threading.Thread(target=process,
+                                      args=(current_app._get_current_object(), duration_sec, []),
+                                      daemon=True)
             thread.start()
             current_app.logger.debug("Started thread")
             flash("Started Process", category="success")
@@ -93,32 +97,30 @@ def water(plant_id):
                                    cancel_form=cancel_form)
         else:
             flash("Not Running", category="error")
-        config = Config.query.first()
     return render_template("water/water.html",
                            user=current_user,
                            status=plant.status,
-                           config=config,
                            water_form=water_form,
                            cancel_form=cancel_form)
 
 
-def run_systems(app, duration_sec, valve_obj, pump_obj):
+def process(app, duration_sec, plant_id):
     with app.app_context():
-        plant = Plant.query.first()
-        plant.status = True
-        db.session.add(History(start_date_time=datetime.now(), duration_sec=duration_sec))
+        selected_plant = Plant.query.filter(Plant.id == plant_id).first()
+        selected_plant.status = True
+        selected_plant.history.append(History(start_date_time=datetime.now(), duration_sec=duration_sec))
         db.session.commit()
-        app.logger.debug(f"Water status set to {plant.status}")
+        app.logger.debug(f"Water status set to {selected_plant.status}")
         app.logger.info(f"Watering for {duration_sec} seconds")
-        # valve.valve_on()
-        # pump.pump_on()
+        # for obj in objs:
+        #     obj.on()
         loop(app, duration_sec)
-        # valve.valve_off()
-        # pump.pump_off()
+        # for obj in objs:
+        #     obj.off()
         app.logger.info("Finished watering process")
-        plant.status = False
+        selected_plant.status = False
         db.session.commit()
-        app.logger.debug(f"Water status set to {plant.status}")
+        app.logger.debug(f"Water status set to {selected_plant.status}")
     return
 
 
