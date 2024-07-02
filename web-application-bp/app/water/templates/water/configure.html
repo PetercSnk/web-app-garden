@@ -1,0 +1,50 @@
+{% extends "core/core.html" %}
+{% block head %}
+    <title>Configure</title>
+{% endblock %}
+{% block content %}
+    <h1>Configure</h1>
+    <form action="" method="post">
+        {{ plant_form.hidden_tag() }}
+        <p>
+            {{ plant_form.name.label }}
+            {{ plant_form.description }}
+        </p>
+        <p>
+            {{plant_form.description.label }}
+            {{plant_form.description }}
+        <p>
+            {{ plant_form.submit() }}
+        </p>
+    </form>
+     <form action="" method="post">
+        {{ config_form.hidden_tag() }} 
+        <p>
+            {{ config_form.enabled.label }}
+            {{ config_form.enabled }}
+        </p>
+        <p>
+            {{ config_form.duration_sec.label }}
+            {{ config_form.duration_sec }}
+        </p>
+        <p>
+            {{ config_form.min_wait_hr.label }}
+            {{ config_form.min_wait_hr }}
+        </p>
+        <p>
+            {{ config_form.mode.label }}
+            {{ config_form.mode }}
+        </p>
+        <p>
+            {{ config_form.default.label }}
+            {{ config_form.default }}
+        </p>
+        <p>
+            {{ config_form.rain_reset.label }}
+            {{ config_form.rain_reset }}
+        </p>
+        <p>
+            {{ config_form.submit() }}
+        </p>
+    </form>
+{% endblock %}

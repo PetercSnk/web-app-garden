@@ -5,49 +5,19 @@
 {% block content %}
     <h1>Water</h1>
     <form action="" method="post">
-        {{ forms["water"].hidden_tag() }}
+        {{ water_form.hidden_tag() }}
         <p>
-            {{ forms["water"].duration_sec.label }}
-            {{ forms["water"].duration_sec }}
+            {{ water_form.duration_sec.label }}
+            {{ water_form.duration_sec }}
         </p>
         <p>
-            {{ forms["water"].submit() }}
-        </p>
-    </form>
-    <form action="" method="post">
-        {{ forms["cancel"].hidden_tag() }}
-        <p>
-            {{ forms["cancel"].submit() }}
+            {{ water_form.submit() }}
         </p>
     </form>
     <form action="" method="post">
-        {{ forms["config"].hidden_tag() }} 
+        {{ cancel_form.hidden_tag() }}
         <p>
-            {{ forms["config"].enabled.label }}
-            {{ forms["config"].enabled }}
-        </p>
-        <p>
-            {{ forms["config"].duration_sec.label }}
-            {{ forms["config"].duration_sec }}
-        </p>
-        <p>
-            {{ forms["config"].min_wait_hr.label }}
-            {{ forms["config"].min_wait_hr }}
-        </p>
-        <p>
-            {{ forms["config"].mode.label }}
-            {{ forms["config"].mode }}
-        </p>
-        <p>
-            {{ forms["config"].default.label }}
-            {{ forms["config"].default }}
-        </p>
-        <p>
-            {{ forms["config"].rain_reset.label }}
-            {{ forms["config"].rain_reset }}
-        </p>
-        <p>
-            {{ forms["config"].submit() }}
+            {{ cancel_form.submit() }}
         </p>
     </form>
     <h4>Water Running Status: {{ status }}</h4>

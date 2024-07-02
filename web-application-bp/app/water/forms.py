@@ -1,18 +1,15 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, TimeField, BooleanField, SelectField, SubmitField
-from wtforms.validators import DataRequired, Length, NumberRange, InputRequired
-
-
-class SelectedForm(FlaskForm):
-    plant = SelectField("Selected Plant", coerce=int, validators=[InputRequired()])
+from wtforms.validators import DataRequired, Length, NumberRange
 
 
 class PlantForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired(), Length(max=10)])
     description = StringField("Description", validators=[DataRequired(), Length(max=50)])
+    submit = SubmitField("Save")
 
 
-class HistoryForm(FlaskForm):
+class WaterForm(FlaskForm):
     duration_sec = IntegerField("Time (Seconds)", validators=[DataRequired(), NumberRange(min=30, max=300, message="Minimum: %(min)s, Maximum: %(max)s")])
     submit = SubmitField("Water")
 
