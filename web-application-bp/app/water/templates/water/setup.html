@@ -1,0 +1,19 @@
+{% extends "core/core.html" %}
+{% block head %}
+    <title>Setup</title>
+{% endblock %}
+{% block content %}
+    <h1>Setup</h1>
+    <form action="" method="post">
+        {{ plant_form.hidden_tag() }}
+        <dl>
+            {{ plant_form.name.label }}
+            {{ plant_form.name }}
+            {{ plant_form.description.label }}
+            {{ plant_form.description }}
+            {{ plant_form.system.label }}
+            {{ plant_form.system }}
+            {{ plant_form.submit() }}
+        </dl>
+    </form>
+{% endblock %}

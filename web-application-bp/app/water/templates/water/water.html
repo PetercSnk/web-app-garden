@@ -4,6 +4,9 @@
 {% endblock %}
 {% block content %}
     <h1>Water</h1>
+    {% for plant in plants %}
+        <a class="nav-item" href="/water/water/{{ plant.id }}">{{ plant.name }}</a>
+    {% endfor %}
     <form action="" method="post">
         {{ water_form.hidden_tag() }}
         <p>
