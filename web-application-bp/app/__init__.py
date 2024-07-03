@@ -66,7 +66,8 @@ def create_app():
     # water module setup
     from app.water import water_bp
     app.register_blueprint(water_bp, url_prefix="/water")
-    from app.water.setup import setup
+    from app.water.setup import setup_plants, setup_systems
     with app.app_context():
-        setup()
+        setup_plants()
+        setup_systems()
     return app

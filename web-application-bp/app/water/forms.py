@@ -6,6 +6,7 @@ from wtforms.validators import DataRequired, Length, NumberRange
 class PlantForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired(), Length(max=10)])
     description = StringField("Description", validators=[DataRequired(), Length(max=50)])
+    system = SelectField("System", coerce=int, validators=[DataRequired()])
     submit = SubmitField("Save")
 
 

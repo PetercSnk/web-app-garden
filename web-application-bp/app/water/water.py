@@ -6,7 +6,6 @@ from app.water.forms import WaterForm, CancelForm, ConfigForm, PlantForm
 from app.water import water_bp
 from app import db
 import threading
-#from app.water.systems import objs
 from datetime import datetime
 import time
 
@@ -23,6 +22,7 @@ def configure_index():
 def configure(plant_id):
     plant_form = PlantForm()
     config_form = ConfigForm()
+    systems_available = System.query.all()
     plant = Plant.query.filter(Plant.id == plant_id).first()
     config = plant.config
     if plant_form.submit.data and plant_form.validate():
@@ -66,61 +66,61 @@ def water_index():
 @login_required
 def water(plant_id):
     plant = Plant.query.filter(Plant.id == plant_id)
-    water_form = WaterForm()
-    cancel_form = CancelForm()
-    if water_form.submit.data and water_form.validate():
-        if plant.status:
-            flash("Already Runnning", category="error")
-        else:
-            duration_sec = water_form.duration_sec.data
-            # REPLACE [] with objs
-            thread = threading.Thread(target=process,
-                                      args=(current_app._get_current_object(), duration_sec, []),
-                                      daemon=True)
-            thread.start()
-            current_app.logger.debug("Started thread")
-            flash("Started Process", category="success")
-            return render_template("water/water.html",
-                                   user=current_user,
-                                   status=True,
-                                   water_form=water_form,
-                                   cancel_form=cancel_form)
-    elif cancel_form.submit.data and cancel_form.validate():
-        if plant.status:
-            event.set()
-            current_app.logger.debug("Event set")
-            flash("Stopped Process", category="success")
-            return render_template("water/water.html",
-                                   user=current_user,
-                                   status=False,
-                                   water_form=water_form,
-                                   cancel_form=cancel_form)
-        else:
-            flash("Not Running", category="error")
-    return render_template("water/water.html",
-                           user=current_user,
-                           status=plant.status,
-                           water_form=water_form,
-                           cancel_form=cancel_form)
+    if plant.system.obj:
+        water_form = WaterForm()
+        cancel_form = CancelForm()
+        if water_form.submit.data and water_form.validate():
+            if plant.status:
+                flash("Already Runnning", category="error")
+            else:
+                duration_sec = water_form.duration_sec.data
+                thread = threading.Thread(target=process,
+                                          args=(current_app._get_current_object(), duration_sec, plant),
+                                          daemon=True)
+                thread.start()
+                current_app.logger.debug("Started thread")
+                flash("Started Process", category="success")
+                return render_template("water/water.html",
+                                       user=current_user,
+                                       status=True,
+                                       water_form=water_form,
+                                       cancel_form=cancel_form)
+        elif cancel_form.submit.data and cancel_form.validate():
+            if plant.status:
+                event.set()
+                current_app.logger.debug("Event set")
+                flash("Stopped Process", category="success")
+                return render_template("water/water.html",
+                                       user=current_user,
+                                       status=False,
+                                       water_form=water_form,
+                                       cancel_form=cancel_form)
+            else:
+                flash("Not Running", category="error")
+        return render_template("water/water.html",
+                               user=current_user,
+                               status=plant.status,
+                               water_form=water_form,
+                               cancel_form=cancel_form)
+    else:
+        flash("Please setup system")
+        return redirect(url_for("water_bp.configure", plant_id=plant.id))
 
 
-def process(app, duration_sec, plant_id):
+def process(app, duration_sec, plant):
     with app.app_context():
-        selected_plant = Plant.query.filter(Plant.id == plant_id).first()
-        selected_plant.status = True
-        selected_plant.history.append(History(start_date_time=datetime.now(), duration_sec=duration_sec))
+        plant.status = True
+        plant.history.append(History(start_date_time=datetime.now(), duration_sec=duration_sec))
         db.session.commit()
-        app.logger.debug(f"Water status set to {selected_plant.status}")
+        app.logger.debug(f"Plant status set to {plant.status}")
         app.logger.info(f"Watering for {duration_sec} seconds")
-        # for obj in objs:
-        #     obj.on()
+        #plant.system.obj.on()
         loop(app, duration_sec)
-        # for obj in objs:
-        #     obj.off()
+        #plant.system.obj.off()
         app.logger.info("Finished watering process")
-        selected_plant.status = False
+        plant.status = False
         db.session.commit()
-        app.logger.debug(f"Water status set to {selected_plant.status}")
+        app.logger.debug(f"Water status set to {plant.status}")
     return
 
 

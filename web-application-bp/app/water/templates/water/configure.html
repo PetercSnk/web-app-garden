@@ -8,6 +8,9 @@
     <p>{{ plant.description }}</p>
     <div class="get-config-btns">
         {% for plantx in plants %}
+            <p>{{ plantx }}</p>
+        {% endfor %}
+    </div>
     <form action="" method="post">
         {{ plant_form.hidden_tag() }}
         <p>

@@ -1,25 +1,30 @@
 from app import db
 
 
+class System(db.Model):
+    __bind_key__ = "water"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    obj = db.Column(db.PickleType)
+    plants = db.relationship("Plant", backref="system")
+
+    def __repr__(self):
+        return f"<System: {self.name}>"
+
+
 class Plant(db.Model):
     __bind_key__ = "water"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
     status = db.Column(db.Boolean)
-    system = db.relationship("System")
+    system_id = db.Column(db.Integer, db.ForeignKey("system.id"))
     history = db.relationship("History", backref="plant", cascade="all, delete-orphan")
     config = db.relationship("Config", backref="plant", cascade="all, delete-orphan")
+    estimate = db.Column(db.DateTime)
 
     def __repr__(self):
         return f"<Plant: {self.name}>"
-
-
-class System(db.Model):
-    __bind_key__ = "water"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    obj = db.Column(db.PickleType)
 
 
 class History(db.Model):
@@ -30,7 +35,7 @@ class History(db.Model):
     duration_sec = db.Column(db.Integer)
 
     def __repr__(self):
-        return f"<Water: {self.start_date_time}>"
+        return f"<History: {self.start_date_time}>"
 
 
 class Config(db.Model):
@@ -43,7 +48,6 @@ class Config(db.Model):
     mode = db.Column(db.Integer)
     default = db.Column(db.Time)
     rain_reset = db.Column(db.Boolean)
-    estimate = db.Column(db.DateTime)
 
     def __repr__(self):
-        return f"<WaterAuto: {self.id}"
+        return f"<Config: {self.id}"

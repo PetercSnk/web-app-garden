@@ -5,22 +5,32 @@ import sys
 import inspect
 
 
-objs = []
-for name, obj in inspect.getmembers(sys.modules[systems]):
-    if inspect.isclass(obj):
-        objs.append((name, obj))
+def get_classes(package):
+    # get all classes in package
+    classes = []
+    for name, _class in inspect.getmembers(sys.modules[package]):
+        if inspect.isclass(_class):
+            classes.append((name, _class))
+    return classes
 
 
-def setup():
-    # create default plant if none exist otherwise set its status to false
+def setup_plants():
+    # create default plant if none exist otherwise set all statuses to false
     plants = Plant.query.all()
     if not plants:
         db.session.add(Plant(name="Default", description="Default", status=False))
     else:
         for plant in plants:
             plant.status = False
-    system_names = [system.name for system in System.query.all()]
-    for obj in objs:
-        if obj[0] not in system_names:
-            db.session.add(System(name=obj[0], obj=obj[1]))
+    db.session.commit()
+
+
+def setup_systems():
+    # add all systems to system table
+    existing_systems = [system.name for system in System.query.all()]
+    classes = get_classes(systems)
+    for name, _class in classes:
+        if name not in existing_systems:
+            obj = _class()
+            db.session.add(System(name=name, obj=obj))
     db.session.commit()
