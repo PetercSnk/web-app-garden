@@ -5,8 +5,8 @@
 {% block content %}
     <h1>Setup</h1>
     <form action="" method="post">
-        {{ plant_form.hidden_tag() }}
         <dl>
+            {{ plant_form.hidden_tag() }}
             {{ plant_form.name.label }}
             {{ plant_form.name }}
             {{ plant_form.description.label }}
@@ -16,4 +16,9 @@
             {{ plant_form.submit() }}
         </dl>
     </form>
+    <h2>Available Plants</h2>
+    {% for plant in plants_available %}
+        <p>{{ plant.name }}, {{ plant.description }}, {{ plant.system.name }}
+        <a href="{{ url_for('water_bp.delete', plant_id=plant.id) }}">Delete</a></p>
+    {% endfor %}
 {% endblock %}

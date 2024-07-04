@@ -4,24 +4,18 @@
 {% endblock %}
 {% block content %}
     <h1>Water</h1>
-    {% for plant in plants %}
-        <a class="nav-item" href="/water/water/{{ plant.id }}">{{ plant.name }}</a>
+    {% for plant in plants_available %}
+        <a class="nav-item" href="{{ url_for('water_bp.water', plant_id=plant.id) }}">{{ plant.name }}</a>
     {% endfor %}
+    <h2>Selected Plant: {{ plant_selected.name }}</h2>
     <form action="" method="post">
-        {{ water_form.hidden_tag() }}
-        <p>
+        <dl>
+            {{ water_form.hidden_tag() }}
             {{ water_form.duration_sec.label }}
             {{ water_form.duration_sec }}
-        </p>
-        <p>
             {{ water_form.submit() }}
-        </p>
+        </dl>
     </form>
-    <form action="" method="post">
-        {{ cancel_form.hidden_tag() }}
-        <p>
-            {{ cancel_form.submit() }}
-        </p>
-    </form>
-    <h4>Water Running Status: {{ status }}</h4>
+    <a href ="{{ url_for('water_bp.cancel', plant_id=plant_selected.id) }}">Cancel</a> 
+    <h4>Water Running Status: {{ plant_selected.status }}</h4>
 {% endblock %}
