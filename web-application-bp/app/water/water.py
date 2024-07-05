@@ -109,8 +109,8 @@ def water(plant_id):
                 duration_sec = water_form.duration_sec.data
                 plant_selected.history.append(History(start_date_time=datetime.now(), duration_sec=duration_sec))
                 db.session.commit()
-                current_app.logger.debug(f"Plant status set to {plant_selected.status}")
-                current_app.logger.info(f"Watering for {duration_sec} seconds")
+                current_app.logger.debug(f"Set '{plant_selected.name}' status to {plant_selected.status}")
+                current_app.logger.info(f"Watering '{plant_selected.name}' for {duration_sec} seconds")
                 thread = threading.Thread(target=process,
                                           args=(current_app._get_current_object(), duration_sec, plant_id),
                                           daemon=True)
@@ -164,15 +164,15 @@ def cancel(plant_id):
 def process(app, duration_sec, plant_id):
     """Watering process"""
     with app.app_context():
-        app.logger.debug("Started watering process")
         plant_selected = Plant.query.filter(Plant.id == plant_id).first()
+        app.logger.debug(f"Started watering process for '{plant_selected.name}'")
         plant_selected.system.obj.on()
         loop(app, duration_sec)
         plant_selected.system.obj.off()
         plant_selected.status = False
         db.session.commit()
-        app.logger.debug(f"Water status set to {plant_selected.status}")
-        app.logger.debug("Finished watering process")
+        app.logger.debug(f"Set '{plant_selected.name}' status to {plant_selected.status}")
+        app.logger.debug(f"Finished watering process for '{plant_selected.name}'")
     return
 
 
