@@ -4,60 +4,38 @@
 {% endblock %}
 {% block content %}
     <h1>Configure</h1>
-    <p>{{ plant.name }}</p>
-    <p>{{ plant.description }}</p>
-    <div class="get-config-btns">
-        {% for plantx in plants %}
-            <p>{{ plantx }}</p>
-        {% endfor %}
-    </div>
+    {% for plant in plants_available %}
+        <a class="nav-item" href="{{ url_for('water_bp.configure', plant_id=plant.id) }}">{{ plant.name }}</a>
+    {% endfor %}
+    <h2>Selected Plant: {{ plant_selected.name }}</h2>
     <form action="" method="post">
-        {{ plant_form.hidden_tag() }}
-        <p>
-            {{ plant_form.name.label }}
-            {{ plant_form.description }}
-        </p>
-        <p>
-            {{ plant_form.description.label }}
-            {{ plant_form.description }}
-        <p>
-            {{ plant_form.submit() }}
-        </p>
-    </form>
-     <form action="" method="post">
-        {{ config_form.hidden_tag() }} 
-        <p>
+        <dl>
+            {{ config_form.hidden_tag() }} 
             {{ config_form.enabled.label }}
             {{ config_form.enabled }}
-            {{ plant.config.enabled }}
-        </p>
-        <p>
+            {{ config_selected.enabled }}
+            <br>
             {{ config_form.duration_sec.label }}
             {{ config_form.duration_sec }}
-            {{ plant.config.duration_sec }}
-        </p>
-        <p>
+            {{ config_selected.duration_sec }}
+            <br>
             {{ config_form.min_wait_hr.label }}
             {{ config_form.min_wait_hr }}
-            {{ plant.config.min_wait_hr }}
-        </p>
-        <p>
+            {{ config_selected.min_wait_hr }}
+            <br>
             {{ config_form.mode.label }}
             {{ config_form.mode }}
-            {{ plant.config.mode }}
-        </p>
-        <p>
+            {{ config_selected.mode }}
+            <br>
             {{ config_form.default.label }}
             {{ config_form.default }}
-            {{ plant.config.default }}
-        </p>
-        <p>
+            {{ config_selected.default }}
+            <br>
             {{ config_form.rain_reset.label }}
             {{ config_form.rain_reset }}
-            {{ plant.config.rain_reset }}
-        </p>
-        <p>
+            {{ config_selected.rain_reset }}
+            <br>
             {{ config_form.submit() }}
-        </p>
+        </dl>
     </form>
 {% endblock %}

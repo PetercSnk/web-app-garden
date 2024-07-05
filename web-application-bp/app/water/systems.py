@@ -1,3 +1,4 @@
+from flask import current_app
 # from app.water.valve import Valve
 # from app.water.pump import Pump
 # import time
@@ -25,7 +26,7 @@ class TEST(object):
         self.atr = "TEST_ATR"
 
     def on(self):
-        print("ON")
+        current_app.logger.debug("ON")
 
     def off(self):
-        print("OFF")
+        current_app.logger.debug("OFF")

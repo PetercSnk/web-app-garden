@@ -15,13 +15,13 @@ class System(db.Model):
 class Plant(db.Model):
     __bind_key__ = "water"
     id = db.Column(db.Integer, primary_key=True)
+    system_id = db.Column(db.Integer, db.ForeignKey("system.id"))
     name = db.Column(db.String)
     description = db.Column(db.String)
     status = db.Column(db.Boolean)
-    system_id = db.Column(db.Integer, db.ForeignKey("system.id"))
+    estimate = db.Column(db.DateTime)
     history = db.relationship("History", backref="plant", cascade="all, delete-orphan")
     config = db.relationship("Config", backref="plant", cascade="all, delete-orphan")
-    estimate = db.Column(db.DateTime)
 
     def __repr__(self):
         return f"<Plant: {self.name}>"

@@ -13,7 +13,7 @@
                     <div>
                         <a class="nav-item" id="home" href="{{ url_for('weather_bp.index') }}">Forecast</a>
                         <a class="nav-item" id="water" href="{{ url_for('water_bp.water_check') }}">Water</a>
-                        <a class="nav-item" id="configure" href="">Configure</a>
+                        <a class="nav-item" id="configure" href="{{ url_for('water_bp.configure_check') }}">Configure</a>
                         <a class="nav-item" id="setup" href="{{ url_for('water_bp.setup') }}">Setup</a>
                         <a class="nav-item" id="logout" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
                     </div>
