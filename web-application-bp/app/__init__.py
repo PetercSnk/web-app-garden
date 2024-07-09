@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_apscheduler import APScheduler
 import logging.config
 import os
 import yaml
@@ -8,6 +9,8 @@ import yaml
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+scheduler = APScheduler()
+events = {}
 
 
 def create_app():
@@ -30,10 +33,9 @@ def create_app():
     # initialise databases
     db.init_app(app)
 
-    # initialise extensions
-    from app.core import extensions
-    extensions.scheduler.init_app(app)
-    extensions.scheduler.start()
+    # initialise scheduler
+    scheduler.init_app(app)
+    scheduler.start()
 
     # core module setup
     from app.core import core_bp
@@ -66,8 +68,8 @@ def create_app():
     # water module setup
     from app.water import water_bp
     app.register_blueprint(water_bp, url_prefix="/water")
-    from app.water.setup import init_systems, reset_statuses
+    from app.water.setup import init_systems, init_plants
     with app.app_context():
         init_systems()
-        reset_statuses()
+        init_plants()
     return app
