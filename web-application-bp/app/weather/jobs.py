@@ -1,7 +1,6 @@
-from app.core.extensions import scheduler
 from app.weather.models import Weather, Day
 from app.weather.config import Config
-from app import db
+from app import db, scheduler
 import datetime
 from suntime import Sun
 import requests
@@ -111,7 +110,7 @@ def add_to_db(organised_forecast):
                 exists_log.append(date.strftime("%d/%m/%y"))
         db.session.commit()
     scheduler.app.logger.debug(f"Dates {exists_log} already exist in database")
-    scheduler.app.logger.debug(f"Added {add_log} to database")
+    scheduler.app.logger.debug(f"Dates {add_log} added to database")
     return add_log
 
 
