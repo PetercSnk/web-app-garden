@@ -1,11 +1,10 @@
 from flask import render_template, flash, current_app, redirect, url_for, request
 from flask_login import login_required, current_user
-from app.core.extensions import event
 from app.water.models import History, Config, Plant, System
 from app.water.forms import WaterForm, ConfigForm, PlantForm
 from app.water import water_bp
-from app import db
-import threading
+from app import db, events
+from threading import Thread, Event
 from datetime import datetime
 import time
 
@@ -13,23 +12,26 @@ import time
 @water_bp.route("/setup", methods=["GET", "POST"])
 @login_required
 def setup():
-    """Create plants & auto assign a default config"""
+    """Create plants & assign a default config & event obj"""
     plant_form = PlantForm()
     systems_available = [(system.id, system.name) for system in System.query.all()]
     plant_form.system.choices = systems_available
     if request.method == "POST" and plant_form.validate():
         default = datetime.strptime("6", "%H").time()
-        new_plant = Plant(system_id=plant_form.system.data,
-                          name=plant_form.name.data,
-                          description=plant_form.description.data,
-                          status=False,
-                          estimate=default)
+        name = plant_form.name.data
         new_config = Config(enabled=False,
                             duration_sec=120,
                             min_wait_hr=24,
                             mode=3,
                             default=default,
                             rain_reset=False)
+        new_plant = Plant(system_id=plant_form.system.data,
+                          name=name,
+                          description=plant_form.description.data,
+                          status=False,
+                          estimate=default,
+                          config=new_config)
+        events[name] = Event()
         new_plant.config.append(new_config)
         db.session.add(new_plant)
         db.session.commit()
@@ -47,6 +49,7 @@ def delete(plant_id):
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         flash("Deleted plant", category="success")
+        events.pop(plant_selected.name)
         db.session.delete(plant_selected)
         db.session.commit()
     else:
@@ -59,22 +62,23 @@ def delete(plant_id):
 def configure(plant_id):
     """Edit plant config settings"""
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
+    current_app.logger.debug(plant_selected.config.mode)
+    #config_selected = Config.query.filter(Config.plant_id == plant_selected.id).first()
     if plant_selected:
         config_form = ConfigForm()
-        config_selected = plant_selected.config
         if request.method == "POST" and config_form.validate():
-            config_selected.enabled = config_form.enabled.data
-            config_selected.duration_sec = config_form.duration_sec.data
-            config_selected.min_wait_hr = config_form.min_wait_hr.data
-            config_selected.mode = config_form.mode.data
-            config_selected.default = config_form.default.data
-            config_selected.rain_reset = config_form.rain_reset.data
+            plant_selected = Plant.query.filter(Plant.id == plant_id).first()
+            plant_selected.config.enabled = config_form.enabled.data
+            plant_selected.config.duration_sec = config_form.duration_sec.data
+            plant_selected.config.min_wait_hr = config_form.min_wait_hr.data
+            plant_selected.config.mode = config_form.mode.data
+            plant_selected.config.default = config_form.default.data
+            plant_selected.config.rain_reset = config_form.rain_reset.data
             db.session.commit()
         plants_available = Plant.query.order_by(Plant.id).all()
         return render_template("water/configure.html",
                                user=current_user,
                                plant_selected=plant_selected,
-                               config_selected=config_selected,
                                config_form=config_form,
                                plants_available=plants_available)
     else:
@@ -109,11 +113,11 @@ def water(plant_id):
                 duration_sec = water_form.duration_sec.data
                 plant_selected.history.append(History(start_date_time=datetime.now(), duration_sec=duration_sec))
                 db.session.commit()
-                current_app.logger.debug(f"Set '{plant_selected.name}' status to {plant_selected.status}")
+                current_app.logger.debug(f"Set status of '{plant_selected.name}' to {plant_selected.status}")
                 current_app.logger.info(f"Watering '{plant_selected.name}' for {duration_sec} seconds")
-                thread = threading.Thread(target=process,
-                                          args=(current_app._get_current_object(), duration_sec, plant_id),
-                                          daemon=True)
+                thread = Thread(target=process,
+                                args=(current_app._get_current_object(), duration_sec, plant_id),
+                                daemon=True)
                 thread.start()
                 current_app.logger.debug("Started thread")
                 flash("Started Process", category="success")
@@ -147,8 +151,8 @@ def cancel(plant_id):
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         if plant_selected.status:
-            event.set()
-            current_app.logger.debug("Event set")
+            events[plant_selected.name].set()
+            current_app.logger.debug(f"Set event for '{plant_selected.name}'")
             # duplicate set status so page is updated when process cancelled?
             plant_selected.status = False
             db.session.commit()
@@ -165,24 +169,25 @@ def process(app, duration_sec, plant_id):
     """Watering process"""
     with app.app_context():
         plant_selected = Plant.query.filter(Plant.id == plant_id).first()
+        event = events[plant_selected.name]
         app.logger.debug(f"Started watering process for '{plant_selected.name}'")
         plant_selected.system.obj.on()
-        loop(app, duration_sec)
+        loop(app, duration_sec, event)
         plant_selected.system.obj.off()
         plant_selected.status = False
         db.session.commit()
-        app.logger.debug(f"Set '{plant_selected.name}' status to {plant_selected.status}")
+        app.logger.debug(f"Set status of '{plant_selected.name}' to {plant_selected.status}")
         app.logger.debug(f"Finished watering process for '{plant_selected.name}'")
     return
 
 
-def loop(app, duration_sec):
+def loop(app, duration_sec, event):
     """Inner loop of watering process"""
     app.logger.debug("Loop started")
     for x in range(duration_sec):
         time.sleep(1)
         if event.is_set():
-            app.logger.debug("Loop stopped")
+            app.logger.debug("Loop cancelled")
             event.clear()
             return
     app.logger.debug("Loop stopped")

@@ -1,6 +1,7 @@
 from app.water.models import Plant, System
 from app.water import systems
-from app import db
+from app import db, events
+from threading import Event
 import inspect
 
 
@@ -26,11 +27,12 @@ def init_systems():
     return
 
 
-def reset_statuses():
-    """Reset all statuses"""
+def init_plants():
+    """Reset statuses & create event obj for each plant"""
     plants = Plant.query.all()
     if plants:
         for plant in plants:
+            events[plant.name] = Event()
             plant.status = False
         db.session.commit()
     return

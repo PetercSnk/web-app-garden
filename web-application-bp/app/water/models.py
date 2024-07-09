@@ -6,7 +6,7 @@ class System(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
     obj = db.Column(db.PickleType)
-    plants = db.relationship("Plant", backref="system")
+    plant = db.relationship("Plant", uselist=False, backref="system")
 
     def __repr__(self):
         return f"<System: {self.name}>"
@@ -21,7 +21,7 @@ class Plant(db.Model):
     status = db.Column(db.Boolean)
     estimate = db.Column(db.DateTime)
     history = db.relationship("History", backref="plant", cascade="all, delete-orphan")
-    config = db.relationship("Config", backref="plant", cascade="all, delete-orphan")
+    config = db.relationship("Config", uselist=False, backref="plant", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Plant: {self.name}>"

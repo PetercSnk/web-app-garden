@@ -13,27 +13,27 @@
             {{ config_form.hidden_tag() }} 
             {{ config_form.enabled.label }}
             {{ config_form.enabled }}
-            {{ config_selected.enabled }}
+            {{ plant_selected.config.enabled }}
             <br>
             {{ config_form.duration_sec.label }}
             {{ config_form.duration_sec }}
-            {{ config_selected.duration_sec }}
+            {{ plant_selected.config.duration_sec }}
             <br>
             {{ config_form.min_wait_hr.label }}
             {{ config_form.min_wait_hr }}
-            {{ config_selected.min_wait_hr }}
+            {{ plant_selected.config.min_wait_hr }}
             <br>
             {{ config_form.mode.label }}
             {{ config_form.mode }}
-            {{ config_selected.mode }}
+            {{ plant_selected.config.mode }}
             <br>
             {{ config_form.default.label }}
             {{ config_form.default }}
-            {{ config_selected.default }}
+            {{ plant_selected.config.default }}
             <br>
             {{ config_form.rain_reset.label }}
             {{ config_form.rain_reset }}
-            {{ config_selected.rain_reset }}
+            {{ plant_selected.config.rain_reset }}
             <br>
             {{ config_form.submit() }}
         </dl>
