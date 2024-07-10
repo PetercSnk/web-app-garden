@@ -12,29 +12,34 @@ import time
 @water_bp.route("/setup", methods=["GET", "POST"])
 @login_required
 def setup():
-    """Create plants & assign a default config & event obj"""
+    """Create plants & assign a default config & event obj."""
     plant_form = PlantForm()
-    systems_available = [(system.id, system.name) for system in System.query.all()]
+    systems_in_use = [plant.system.id for plant in Plant.query.all()]
+    systems_available = []
+    for system in System.query.all():
+        if system.id not in systems_in_use:
+            systems_available.append((system.id, system.name))
+    current_app.logger.debug(f"Systems available {systems_available}")
+    if not systems_available:
+        flash("No systems available", category="info")
     plant_form.system.choices = systems_available
     if request.method == "POST" and plant_form.validate():
-        default = datetime.strptime("6", "%H").time()
         name = plant_form.name.data
         new_config = Config(enabled=False,
                             duration_sec=120,
                             min_wait_hr=24,
                             mode=3,
-                            default=default,
+                            default=datetime.strptime("6", "%H").time(),
                             rain_reset=False)
         new_plant = Plant(system_id=plant_form.system.data,
                           name=name,
                           description=plant_form.description.data,
                           status=False,
-                          estimate=default,
                           config=new_config)
         events[name] = Event()
-        new_plant.config.append(new_config)
         db.session.add(new_plant)
         db.session.commit()
+        current_app.logger.debug(f"New plant '{name}' created")
     plants_available = Plant.query.order_by(Plant.id).all()
     return render_template("water/setup.html",
                            user=current_user,
@@ -45,13 +50,14 @@ def setup():
 @water_bp.route("/delete/<int:plant_id>", methods=["GET", "POST"])
 @login_required
 def delete(plant_id):
-    """Delete plants & all relationships"""
+    """Delete plants & all relationships."""
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         flash("Deleted plant", category="success")
         events.pop(plant_selected.name)
         db.session.delete(plant_selected)
         db.session.commit()
+        current_app.logger.debug(f"Deleted plant '{plant_selected.name}'")
     else:
         flash("Does not exist", category="error")
     return redirect(url_for("water_bp.setup"))
@@ -60,10 +66,8 @@ def delete(plant_id):
 @water_bp.route("/configure/<int:plant_id>", methods=["GET", "POST"])
 @login_required
 def configure(plant_id):
-    """Edit plant config settings"""
+    """Edit plant config settings."""
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
-    current_app.logger.debug(plant_selected.config.mode)
-    #config_selected = Config.query.filter(Config.plant_id == plant_selected.id).first()
     if plant_selected:
         config_form = ConfigForm()
         if request.method == "POST" and config_form.validate():
@@ -75,6 +79,7 @@ def configure(plant_id):
             plant_selected.config.default = config_form.default.data
             plant_selected.config.rain_reset = config_form.rain_reset.data
             db.session.commit()
+            current_app.logger.debug(f"Config for {plant_selected.name}' updated")
         plants_available = Plant.query.order_by(Plant.id).all()
         return render_template("water/configure.html",
                                user=current_user,
@@ -89,7 +94,7 @@ def configure(plant_id):
 @water_bp.route("/configure/check", methods=["GET"])
 @login_required
 def configure_check():
-    """Check if plants exist and redirect accordingly"""
+    """Check if plants exist and redirect accordingly."""
     plant = Plant.query.first()
     if plant:
         return redirect(url_for("water_bp.configure", plant_id=plant.id))
@@ -101,7 +106,7 @@ def configure_check():
 @water_bp.route("/water/<int:plant_id>", methods=["GET", "POST"])
 @login_required
 def water(plant_id):
-    """Create new thread and start watering process"""
+    """Create new thread and start watering process."""
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         water_form = WaterForm()
@@ -135,7 +140,7 @@ def water(plant_id):
 @water_bp.route("/water/check", methods=["GET"])
 @login_required
 def water_check():
-    """Check if plants exist and redirect accordingly"""
+    """Check if plants exist and redirect accordingly."""
     plant = Plant.query.first()
     if plant:
         return redirect(url_for("water_bp.water", plant_id=plant.id))
@@ -147,7 +152,7 @@ def water_check():
 @water_bp.route("/cancel/<int:plant_id>", methods=["GET", "POST"])
 @login_required
 def cancel(plant_id):
-    """Cancel watering process in thread created by water"""
+    """Cancel watering process in thread created by water."""
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         if plant_selected.status:
@@ -166,7 +171,7 @@ def cancel(plant_id):
 
 
 def process(app, duration_sec, plant_id):
-    """Watering process"""
+    """Watering process."""
     with app.app_context():
         plant_selected = Plant.query.filter(Plant.id == plant_id).first()
         event = events[plant_selected.name]
@@ -182,7 +187,7 @@ def process(app, duration_sec, plant_id):
 
 
 def loop(app, duration_sec, event):
-    """Inner loop of watering process"""
+    """Inner loop of watering process."""
     app.logger.debug("Loop started")
     for x in range(duration_sec):
         time.sleep(1)
