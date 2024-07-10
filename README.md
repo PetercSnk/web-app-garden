@@ -1,5 +1,7 @@
 # Automated Garden
 
+#OUT OF DATE BELOW IS NO LONGER THE FORMAT
+
 A web application built in Flask for watering outdoor plants with a Raspberry Pi or any other similar device.
 
 This was designed with specific components and devices in mind, it can work for you but will need editing. The configuration section below outlines what needs to be done.
