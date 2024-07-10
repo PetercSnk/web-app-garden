@@ -6,7 +6,7 @@ import inspect
 
 
 def get_classes(package):
-    """Get all classes in package"""
+    """Get all classes in package."""
     classes = []
     for name, _class in inspect.getmembers(package):
         if inspect.isclass(_class):
@@ -15,7 +15,11 @@ def get_classes(package):
 
 
 def init_systems():
-    """Reset & load available systems into database"""
+    """
+    Reset & load available systems into database.
+
+    Run this function on startup.
+    """
     existing_systems = [system.name for system in System.query.all()]
     classes = get_classes(systems)
     for name, _class in classes:
@@ -28,7 +32,11 @@ def init_systems():
 
 
 def init_plants():
-    """Reset statuses & create event obj for each plant"""
+    """
+    Reset statuses & create event obj for each plant.
+
+    Run this function on startup.
+    """
     plants = Plant.query.all()
     if plants:
         for plant in plants:

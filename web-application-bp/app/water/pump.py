@@ -2,6 +2,8 @@ import RPi.GPIO as GPIO
 
 
 class Pump(object):
+    """Controls outdoor pump."""
+
     def __init__(self, relay):
         self.relay = relay
         GPIO.setmode(GPIO.BOARD)

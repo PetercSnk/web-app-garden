@@ -3,6 +3,16 @@ import RPi.GPIO as GPIO
 
 
 class Valve(object):
+    """
+    Controls outdoor valve.
+
+    The input readings for the switch are not stable
+    and often look like 000010101101111. Thus, the
+    following methods deal with this and avoid leaving
+    the valve half open.
+
+    """
+
     def __init__(self, relay, switch):
         self.relay = relay
         self.switch = switch
