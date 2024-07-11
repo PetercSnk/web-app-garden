@@ -2,8 +2,9 @@ from flask import render_template, flash, current_app, redirect, url_for, reques
 from flask_login import login_required, current_user
 from app.water.models import History, Config, Plant, System
 from app.water.forms import WaterForm, ConfigForm, PlantForm
+from app.water.jobs import reschedule
 from app.water import water_bp
-from app import db, events
+from app import db, events, scheduler
 from threading import Thread, Event
 from datetime import datetime
 import time
@@ -70,7 +71,11 @@ def configure(plant_id):
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         config_form = ConfigForm()
+        # prefil forms 
+        config_form.enabled.data = plant_selected.config.enabled
+        config_form.duration_sec.data = plant_selected.config.duration_sec
         if request.method == "POST" and config_form.validate():
+            # why is double query needed? doesn't work with just above
             plant_selected = Plant.query.filter(Plant.id == plant_id).first()
             plant_selected.config.enabled = config_form.enabled.data
             plant_selected.config.duration_sec = config_form.duration_sec.data
@@ -80,6 +85,21 @@ def configure(plant_id):
             plant_selected.config.rain_reset = config_form.rain_reset.data
             db.session.commit()
             current_app.logger.debug(f"Config for {plant_selected.name}' updated")
+            if config_form.enabled.data:
+                # use get to check, returns none if non-exist
+                scheduler.get_job(f"reschedule_{plant_id}")
+                #scheduler.remove_job(f"reschedule_{plant_id}")
+                scheduler.add_job(func=reschedule,
+                                  trigger="cron",
+                                  minute=0,
+                                  hour=2,
+                                  id=f"reschedule_{plant_id}",
+                                  name=f"reschedule_{plant_id}")
+                scheduler.run_job(f"reschedule_{plant_id}")
+            else:
+                job = scheduler.get_job(f"reschedule_{plant_id}")
+                current_app.logger.debug(job)
+        
         plants_available = Plant.query.order_by(Plant.id).all()
         return render_template("water/configure.html",
                                user=current_user,
