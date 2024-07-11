@@ -114,7 +114,7 @@ def add_to_db(organised_forecast):
     return add_log
 
 
-@scheduler.task("cron", id="delete_old_records", minute="0", hour="2", day="*", month="*", day_of_week="*")
+@scheduler.task("cron", id="delete_old_records", minute="30", hour="1", day="*", month="*", day_of_week="*")
 def delete_old_records():
     with scheduler.app.app_context():
         days = Day.query.order_by(Day.date).all()
