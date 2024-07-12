@@ -1,11 +1,11 @@
 from app.weather.models import Weather, Day
-from app.weather.config import Config
 from app import db, scheduler
-import datetime
+from datetime import datetime
 from suntime import Sun
 import requests
 import traceback
 from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
+import pytz
 
 
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
@@ -31,7 +31,8 @@ def kelvin_to_celsius(kelvin):
 
 def request_weather():
     try:
-        url = Config.BASE_URL + "lat=" + Config.LAT + "&lon=" + Config.LON + "&appid=" + Config.API_KEY
+        config = scheduler.app.config
+        url = config["BASE_URL"] + "lat=" + str(config["LATITUDE"]) + "&lon=" + str(config["LONGITUDE"]) + "&appid=" + config["API_KEY"]
         request = requests.get(url)
         scheduler.app.logger.debug(f"Request made to {url}")
         json = request.json()
@@ -44,16 +45,11 @@ def request_weather():
 def extract_data(json):
     try:
         organised_forecast = {}
-        # information about city
-        city = json["city"]
-        latitude = city["coord"]["lat"]
-        longitude = city["coord"]["lon"]
-        timedelta = datetime.timedelta(seconds=city["timezone"])
-        timezone = datetime.timezone(timedelta)
+        timezone = pytz.timezone(scheduler.app.config["TIMEZONE"])
         # extract only the necessary data
         five_day_forecast = json["list"]
         for three_hour_step in five_day_forecast:
-            date_time = datetime.datetime.utcfromtimestamp(three_hour_step["dt"]).astimezone(timezone)
+            date_time = timezone.localize(datetime.utcfromtimestamp(three_hour_step["dt"]))
             weather_data = {
                 "time": date_time.time(),
                 "temperature_c": round(kelvin_to_celsius(three_hour_step["main"]["temp"]), 2),
@@ -71,7 +67,7 @@ def extract_data(json):
             if date in organised_forecast:
                 organised_forecast[date]["weather_data"].append(weather_data)
             else:
-                sun = Sun(latitude, longitude)
+                sun = Sun(scheduler.app.config["LATITUDE"], scheduler.app.config["LONGITUDE"])
                 organised_forecast[date] = {"weather_data": [weather_data], "sunrise": sun.get_sunrise_time(date_time, timezone).time(), "sunset": sun.get_sunset_time(date_time, timezone).time()}
         return organised_forecast
     except Exception as error:
