@@ -2,12 +2,13 @@ from flask import render_template, flash, current_app, redirect, url_for, reques
 from flask_login import login_required, current_user
 from app.water.models import History, Config, Plant, System
 from app.water.forms import WaterForm, ConfigForm, PlantForm
-from app.water.jobs import reschedule
 from app.water import water_bp
 from app import db, events, scheduler
 from threading import Thread, Event
-from datetime import datetime
+from datetime import datetime, timedelta, date
+from suntime import Sun
 import time
+import pytz
 
 
 @water_bp.route("/setup", methods=["GET", "POST"])
@@ -28,7 +29,7 @@ def setup():
         name = plant_form.name.data
         new_config = Config(enabled=False,
                             duration_sec=120,
-                            min_wait_hr=24,
+                            occurrence_days=1,
                             mode=3,
                             default=datetime.strptime("6", "%H").time(),
                             rain_reset=False)
@@ -71,35 +72,40 @@ def configure(plant_id):
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         config_form = ConfigForm()
-        # prefil forms 
-        config_form.enabled.data = plant_selected.config.enabled
-        config_form.duration_sec.data = plant_selected.config.duration_sec
         if request.method == "POST" and config_form.validate():
             # why is double query needed? doesn't work with just above
             plant_selected = Plant.query.filter(Plant.id == plant_id).first()
             plant_selected.config.enabled = config_form.enabled.data
             plant_selected.config.duration_sec = config_form.duration_sec.data
-            plant_selected.config.min_wait_hr = config_form.min_wait_hr.data
+            plant_selected.config.occurrence_days = config_form.occurrence_days.data
             plant_selected.config.mode = config_form.mode.data
             plant_selected.config.default = config_form.default.data
             plant_selected.config.rain_reset = config_form.rain_reset.data
             db.session.commit()
-            current_app.logger.debug(f"Config for {plant_selected.name}' updated")
-            if config_form.enabled.data:
-                # use get to check, returns none if non-exist
-                scheduler.get_job(f"reschedule_{plant_id}")
-                #scheduler.remove_job(f"reschedule_{plant_id}")
-                scheduler.add_job(func=reschedule,
-                                  trigger="cron",
-                                  minute=0,
-                                  hour=2,
-                                  id=f"reschedule_{plant_id}",
-                                  name=f"reschedule_{plant_id}")
-                scheduler.run_job(f"reschedule_{plant_id}")
-            else:
-                job = scheduler.get_job(f"reschedule_{plant_id}")
-                current_app.logger.debug(job)
-        
+            current_app.logger.debug(f"Config for '{plant_selected.name}' updated")
+            add_job(plant_id)
+            # if config_form.enabled.data:
+            #     job = scheduler.get_job(f"reschedule_{plant_id}")
+            #     if job:
+            #         scheduler.remove_job(f"reschedule_{plant_id}")
+            #     scheduler.add_job(func=reschedule,
+            #                       trigger="cron",
+            #                       minute=0,
+            #                       hour=2,
+            #                       id=f"reschedule_{plant_id}",
+            #                       name=f"reschedule_{plant_id}")
+            #     scheduler.run_job(f"reschedule_{plant_id}")
+            # else:
+            #     job = scheduler.get_job(f"reschedule_{plant_id}")
+            #     current_app.logger.debug(job)
+        # prefill forms with current configuration
+        config_form.enabled.default = plant_selected.config.enabled
+        config_form.duration_sec.default = plant_selected.config.duration_sec
+        config_form.occurrence_days.default = plant_selected.config.occurrence_days
+        config_form.mode.default = plant_selected.config.mode
+        config_form.default.default = plant_selected.config.default
+        config_form.rain_reset.default = plant_selected.config.rain_reset
+        config_form.process()
         plants_available = Plant.query.order_by(Plant.id).all()
         return render_template("water/configure.html",
                                user=current_user,
@@ -122,6 +128,17 @@ def configure_check():
         flash("Must create plant to access configure options", category="error")
         return redirect(url_for("water_bp.setup"))
 
+
+def add_job(plant_id):
+    plant_selected = Plant.query.filter(Plant.id == plant_id).first()
+    default = datetime.combine(date.today(), plant_selected.config.default)
+    estimate = default + timedelta(days=plant_selected.config.occurrence_days)
+    mode = plant_selected.config.mode
+    if mode == 1:
+        sun = Sun(current_app.config["LATITUDE"], current_app.config["LONGITUDE"])
+        sunset = sun.get_sunset_time(estimate, current_app.config["TIMEZONE"])
+        current_app.logger.debug(sunset)
+    
 
 @water_bp.route("/water/<int:plant_id>", methods=["GET", "POST"])
 @login_required

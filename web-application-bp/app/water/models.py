@@ -48,7 +48,7 @@ class Config(db.Model):
     plant_id = db.Column(db.Integer, db.ForeignKey("plant.id"))
     enabled = db.Column(db.Boolean)
     duration_sec = db.Column(db.Integer)
-    min_wait_hr = db.Column(db.Integer)
+    occurrence_days = db.Column(db.Integer)
     mode = db.Column(db.Integer)
     default = db.Column(db.Time)
     rain_reset = db.Column(db.Boolean)

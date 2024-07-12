@@ -21,7 +21,7 @@ class ConfigForm(FlaskForm):
     """Edit values for plant configuration."""
     enabled = BooleanField("Enable Automatic Watering")
     duration_sec = IntegerField("Water Duration (Seconds)", validators=[DataRequired(), NumberRange(min=30, max=300, message="Minimum: %(min)s, Maximum: %(max)s")])
-    min_wait_hr = IntegerField("Minimum Wait (Hours)", validators=[DataRequired()])
+    occurrence_days = IntegerField("Occurrence (Days)", validators=[DataRequired(), NumberRange(min=1)])
     mode = SelectField("Mode", choices=[(1, "Sunset"), (2, "Sunrise"), (3, "Default")], validators=[DataRequired()])
     default = TimeField("Default Water Time", validators=[DataRequired()])
     rain_reset = BooleanField("Reset Timer on Rainfall")
