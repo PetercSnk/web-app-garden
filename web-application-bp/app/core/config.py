@@ -13,7 +13,7 @@ class Config(object):
     }
     SCHEDULER_API_ENABLED = True
     BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?"
-    API_KEY = "7003cd97625df5e3aba0aa06cc93f3ad"
+    API_KEY = "KEY"
     LATITUDE = 51.529
     LONGITUDE = -3.191
     TIMEZONE = "Europe/London"
