@@ -32,7 +32,7 @@ def kelvin_to_celsius(kelvin):
 def request_weather():
     try:
         config = scheduler.app.config
-        url = config["BASE_URL"] + "lat=" + str(config["LATITUDE"]) + "&lon=" + str(config["LONGITUDE"]) + "&appid=" + config["API_KEY"]
+        url = f"{config['BASE_URL']}lat={config['LATITUDE']}&lon={config['LONGITUDE']}&appid={config['API_KEY']}"
         request = requests.get(url)
         scheduler.app.logger.debug(f"Request made to {url}")
         json = request.json()
