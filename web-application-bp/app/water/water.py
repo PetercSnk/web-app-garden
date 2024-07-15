@@ -2,13 +2,12 @@ from flask import render_template, flash, current_app, redirect, url_for, reques
 from flask_login import login_required, current_user
 from app.water.models import History, Config, Plant, System
 from app.water.forms import WaterForm, ConfigForm, PlantForm
+from app.water.jobs import get_next_estimate
 from app.water import water_bp
 from app import db, events, scheduler
 from threading import Thread, Event
-from datetime import datetime, timedelta, date
-from suntime import Sun
+from datetime import datetime
 import time
-import pytz
 
 
 @water_bp.route("/setup", methods=["GET", "POST"])
@@ -83,7 +82,8 @@ def configure(plant_id):
             plant_selected.config.rain_reset = config_form.rain_reset.data
             db.session.commit()
             current_app.logger.debug(f"Config for '{plant_selected.name}' updated")
-            add_job(plant_id)
+            estimate = get_next_estimate(plant_id)
+            current_app.logger.debug(estimate)
             # if config_form.enabled.data:
             #     job = scheduler.get_job(f"reschedule_{plant_id}")
             #     if job:
@@ -128,17 +128,6 @@ def configure_check():
         flash("Must create plant to access configure options", category="error")
         return redirect(url_for("water_bp.setup"))
 
-
-def add_job(plant_id):
-    plant_selected = Plant.query.filter(Plant.id == plant_id).first()
-    default = datetime.combine(date.today(), plant_selected.config.default)
-    estimate = default + timedelta(days=plant_selected.config.occurrence_days)
-    mode = plant_selected.config.mode
-    if mode == 1:
-        sun = Sun(current_app.config["LATITUDE"], current_app.config["LONGITUDE"])
-        sunset = sun.get_sunset_time(estimate, current_app.config["TIMEZONE"])
-        current_app.logger.debug(sunset)
-    
 
 @water_bp.route("/water/<int:plant_id>", methods=["GET", "POST"])
 @login_required
