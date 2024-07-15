@@ -46,10 +46,9 @@ def extract_data(json):
     try:
         organised_forecast = {}
         timezone = pytz.timezone(scheduler.app.config["TIMEZONE"])
-        # extract only the necessary data
         five_day_forecast = json["list"]
         for three_hour_step in five_day_forecast:
-            date_time = timezone.localize(datetime.utcfromtimestamp(three_hour_step["dt"]))
+            date_time = datetime.utcfromtimestamp(three_hour_step["dt"])
             weather_data = {
                 "time": date_time.time(),
                 "temperature_c": round(kelvin_to_celsius(three_hour_step["main"]["temp"]), 2),
