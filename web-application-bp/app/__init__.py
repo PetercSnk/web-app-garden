@@ -64,6 +64,7 @@ def create_app():
     app.register_blueprint(weather_bp, url_prefix="/weather")
     from app.weather import commands as weather_cmds
     app.cli.add_command(weather_cmds.drop_day)
+    app.cli.add_command(weather_cmds.drop_all_days)
 
     # water module setup
     from app.water import water_bp

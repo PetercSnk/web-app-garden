@@ -13,3 +13,12 @@ def drop_day(day_id):
         db.session.commit()
     else:
         print(f"Day with id '{day_id}' does not exist")
+
+
+@click.command()
+def drop_all_days():
+    """Delete all days."""
+    days = Day.query.all()
+    for day in days:
+        db.session.delete(day)
+    db.session.commit()
