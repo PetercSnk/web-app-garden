@@ -54,4 +54,4 @@ class Config(db.Model):
     rain_reset = db.Column(db.Boolean)
 
     def __repr__(self):
-        return f"<Config: {self.id}"
+        return f"<Config: {self.id}>"
