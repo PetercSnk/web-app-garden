@@ -24,5 +24,6 @@ class ConfigForm(FlaskForm):
     occurrence_days = IntegerField("Occurrence (Days)", validators=[DataRequired(), NumberRange(min=1)])
     mode = SelectField("Mode", choices=[(1, "Sunset"), (2, "Sunrise"), (3, "Default")], coerce=int, validators=[DataRequired()])
     default = TimeField("Default Water Time", validators=[DataRequired()])
-    rain_reset = BooleanField("Reset Timer on Rainfall")
+    rain_reset = BooleanField("Postpone on Rainfall")
+    threshold_mm = IntegerField("Volume of Rainfall Threshold (Millimetres)", validators=[DataRequired()])
     submit = SubmitField("Save")
