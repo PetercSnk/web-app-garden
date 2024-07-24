@@ -8,32 +8,27 @@
         <a class="nav-item" href="{{ url_for('water_bp.configure', plant_id=plant.id) }}">{{ plant.name }}</a>
     {% endfor %}
     <h2>Selected Plant: {{ plant_selected.name }}</h2>
+    <h3>Estimate: {{ format_estimate(plant_selected.estimate) }}</h3>
     <form action="" method="post">
         <dl>
             {{ config_form.hidden_tag() }} 
             {{ config_form.enabled.label }}
             {{ config_form.enabled }}
-            {{ plant_selected.config.enabled }}
             <br>
             {{ config_form.duration_sec.label }}
             {{ config_form.duration_sec }}
-            {{ plant_selected.config.duration_sec }}
             <br>
             {{ config_form.occurrence_days.label }}
             {{ config_form.occurrence_days }}
-            {{ plant_selected.config.occurrence_days }}
             <br>
             {{ config_form.mode.label }}
             {{ config_form.mode }}
-            {{ plant_selected.config.mode }}
             <br>
             {{ config_form.default.label }}
             {{ config_form.default }}
-            {{ plant_selected.config.default }}
             <br>
             {{ config_form.rain_reset.label }}
             {{ config_form.rain_reset }}
-            {{ plant_selected.config.rain_reset }}
             <br>
             {{ config_form.submit() }}
         </dl>
