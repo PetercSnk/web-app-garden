@@ -2,7 +2,7 @@ from flask import render_template, flash, current_app, redirect, url_for, reques
 from flask_login import login_required, current_user
 from app.water.models import History, Config, Plant, System
 from app.water.forms import WaterForm, ConfigForm, PlantForm
-from app.water.jobs import get_next_estimate
+from app.water.jobs import get_estimate, _job
 from app.water import water_bp
 from app import db, events, scheduler
 from threading import Thread, Event
@@ -76,7 +76,7 @@ def configure(plant_id):
             job_name = f"plant_{plant_id}"
             if scheduler.get_job(job_name):
                 scheduler.remove_job(job_name)
-                current_app.logger.debug(f"Removed job {job_name}")
+                current_app.logger.debug(f"Removed job '{job_name}'")
             # why is double query needed? doesn't work with just above
             plant_selected = Plant.query.filter(Plant.id == plant_id).first()
             plant_selected.config.enabled = config_form.enabled.data
@@ -85,11 +85,16 @@ def configure(plant_id):
             plant_selected.config.mode = config_form.mode.data
             plant_selected.config.default = config_form.default.data
             plant_selected.config.rain_reset = config_form.rain_reset.data
+            plant_selected.config.threshold_mm = config_form.threshold_mm.data
+            plant_selected.config.last_edit = datetime.now().replace(microsecond=0)
             if plant_selected.config.enabled:
-                plant_selected.estimate = get_next_estimate(plant_selected.config)
+                plant_selected.config.estimate = get_estimate(plant_selected.config)
+                current_app.logger.debug(f"Estimate for '{plant_selected.name}' set to {plant_selected.config.estimate}")
+                #ADD JOB
             else:
                 plant_selected.estimate = None
             db.session.commit()
+            _job(plant_id)
             current_app.logger.debug(f"Config for '{plant_selected.name}' updated")
             # if config_form.enabled.data:
             #     job = scheduler.get_job(f"reschedule_{plant_id}")
@@ -112,6 +117,7 @@ def configure(plant_id):
         config_form.mode.default = plant_selected.config.mode
         config_form.default.default = plant_selected.config.default
         config_form.rain_reset.default = plant_selected.config.rain_reset
+        config_form.threshold_mm.default = plant_selected.config.threshold_mm
         config_form.process()
         plants_available = Plant.query.order_by(Plant.id).all()
         return render_template("water/configure.html",
@@ -126,12 +132,12 @@ def configure(plant_id):
 
 @water_bp.context_processor
 def utility():
-    def format_estimate(datetime_obj):
+    def format_date(datetime_obj):
         if datetime_obj is None:
             return "Disabled"
         else:
             return datetime_obj.strftime("%d-%b %H:%M:%S")
-    return dict(format_estimate=format_estimate)
+    return dict(format_date=format_date)
 
 
 @water_bp.route("/configure/check", methods=["GET"])
