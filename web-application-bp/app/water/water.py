@@ -72,6 +72,11 @@ def configure(plant_id):
     if plant_selected:
         config_form = ConfigForm()
         if request.method == "POST" and config_form.validate():
+            # remove existing job
+            job_name = f"plant_{plant_id}"
+            if scheduler.get_job(job_name):
+                scheduler.remove_job(job_name)
+                current_app.logger.debug(f"Removed job {job_name}")
             # why is double query needed? doesn't work with just above
             plant_selected = Plant.query.filter(Plant.id == plant_id).first()
             plant_selected.config.enabled = config_form.enabled.data
@@ -80,10 +85,12 @@ def configure(plant_id):
             plant_selected.config.mode = config_form.mode.data
             plant_selected.config.default = config_form.default.data
             plant_selected.config.rain_reset = config_form.rain_reset.data
+            if plant_selected.config.enabled:
+                plant_selected.estimate = get_next_estimate(plant_selected.config)
+            else:
+                plant_selected.estimate = None
             db.session.commit()
             current_app.logger.debug(f"Config for '{plant_selected.name}' updated")
-            estimate = get_next_estimate(plant_id)
-            current_app.logger.debug(estimate)
             # if config_form.enabled.data:
             #     job = scheduler.get_job(f"reschedule_{plant_id}")
             #     if job:
@@ -115,6 +122,16 @@ def configure(plant_id):
     else:
         flash("Does not exist", category="error")
         return redirect(url_for("water_bp.configure_check"))
+
+
+@water_bp.context_processor
+def utility():
+    def format_estimate(datetime_obj):
+        if datetime_obj is None:
+            return "Disabled"
+        else:
+            return datetime_obj.strftime("%d-%b %H:%M:%S")
+    return dict(format_estimate=format_estimate)
 
 
 @water_bp.route("/configure/check", methods=["GET"])
