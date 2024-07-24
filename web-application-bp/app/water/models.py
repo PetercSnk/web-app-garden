@@ -21,7 +21,6 @@ class Plant(db.Model):
     name = db.Column(db.String)
     description = db.Column(db.String)
     status = db.Column(db.Boolean)
-    estimate = db.Column(db.DateTime)
     history = db.relationship("History", backref="plant", cascade="all, delete-orphan")
     config = db.relationship("Config", uselist=False, backref="plant", cascade="all, delete-orphan")
 
@@ -52,6 +51,9 @@ class Config(db.Model):
     mode = db.Column(db.Integer)
     default = db.Column(db.Time)
     rain_reset = db.Column(db.Boolean)
+    threshold_mm = db.Column(db.Integer)
+    last_edit = db.Column(db.DateTime)
+    estimate = db.Column(db.DateTime)
 
     def __repr__(self):
         return f"<Config: {self.id}>"
