@@ -1,7 +1,8 @@
 from app.water.models import Plant
 from app import db, scheduler
 import pytz
-from datetime import datetime, timedelta
+import openmeteo_requests
+from datetime import timedelta
 from suntime import Sun
 
 
@@ -12,10 +13,10 @@ def get_sun_tz():
     return sun, tz
 
 
-def get_next_estimate(config):
+def get_estimate(config):
     """Get the next earliest estimate for watering."""
-    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    estimate = today + timedelta(days=config.occurrence_days)
+    #start = config.last_edit.replace(hour=0, minute=0, second=0, microsecond=0)
+    estimate = config.last_edit + timedelta(days=config.occurrence_days)
     if config.mode == 1:
         sun, tz = get_sun_tz()
         sunset = sun.get_sunset_time(estimate, tz).time()
@@ -32,9 +33,41 @@ def get_next_estimate(config):
 
 # run on date of water, check weather if enabled, check sun, create job for water
 def add_job(plant_id):
-    scheduler.app.logger.debug(f"run rescheduler for {plant_id}")
+    pass
 
 
+def _job(plant_id):
+    rain = check_rain(plant_id)
+    scheduler.app.logger.debug(rain)
+    return rain
+
+
+def check_rain(plant_id):
+    """Returns true if rainfall meets threshold"""
+    plant_selected = Plant.query.filter(Plant.id == plant_id).first()
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": scheduler.app.config["LATITUDE"],
+        "longitude": scheduler.app.config["LONGITUDE"],
+        "daily": "precipitation_sum",
+        "timezone": scheduler.app.config["TIMEZONE"],
+        "start_date": plant_selected.config.last_edit.date(),
+        "end_date": plant_selected.config.estimate.date()
+    }
+    om = openmeteo_requests.Client()
+    responses = om.weather_api(url, params=params)
+    response = responses[0]
+    daily = response.Daily()
+    rain_sum = sum(daily.Variables(0).ValuesAsNumpy())
+    if rain_sum >= plant_selected.config.threshold_mm:
+        return True
+    else:
+        return False
+
+
+# move process and inner loop here so scheduler can use it
+# move update of db from water func to process
+# is db.session.commit() needed in water, is setting the status to true enough to show on page
 """TODO
 add estimate to plant db
 func to add job @ estimated date
