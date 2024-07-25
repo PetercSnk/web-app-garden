@@ -1,13 +1,12 @@
 from flask import render_template, flash, current_app, redirect, url_for, request
 from flask_login import login_required, current_user
-from app.water.models import History, Config, Plant, System
+from app.water.models import Config, Plant, System
 from app.water.forms import WaterForm, ConfigForm, PlantForm
-from app.water.jobs import get_estimate, _job
+from app.water.jobs import get_estimate, add_job, process, remove_job, log_active_jobs
 from app.water import water_bp
 from app import db, events, scheduler
 from threading import Thread, Event
 from datetime import datetime
-import time
 
 
 @water_bp.route("/setup", methods=["GET", "POST"])
@@ -31,7 +30,9 @@ def setup():
                             occurrence_days=1,
                             mode=3,
                             default=datetime.strptime("6", "%H").time(),
-                            rain_reset=False)
+                            rain_reset=False,
+                            threshold_mm=1,
+                            last_edit=datetime.now().replace(microsecond=0))
         new_plant = Plant(system_id=plant_form.system.data,
                           name=name,
                           description=plant_form.description.data,
@@ -72,11 +73,8 @@ def configure(plant_id):
     if plant_selected:
         config_form = ConfigForm()
         if request.method == "POST" and config_form.validate():
-            # remove existing job
-            job_name = f"plant_{plant_id}"
-            if scheduler.get_job(job_name):
-                scheduler.remove_job(job_name)
-                current_app.logger.debug(f"Removed job '{job_name}'")
+            # remove existing jobs when config is updated
+            remove_job(plant_selected)
             # why is double query needed? doesn't work with just above
             plant_selected = Plant.query.filter(Plant.id == plant_id).first()
             plant_selected.config.enabled = config_form.enabled.data
@@ -90,26 +88,11 @@ def configure(plant_id):
             if plant_selected.config.enabled:
                 plant_selected.config.estimate = get_estimate(plant_selected.config)
                 current_app.logger.debug(f"Estimate for '{plant_selected.name}' set to {plant_selected.config.estimate}")
-                #ADD JOB
+                add_job(plant_selected)
             else:
-                plant_selected.estimate = None
+                plant_selected.config.estimate = None
             db.session.commit()
-            _job(plant_id)
             current_app.logger.debug(f"Config for '{plant_selected.name}' updated")
-            # if config_form.enabled.data:
-            #     job = scheduler.get_job(f"reschedule_{plant_id}")
-            #     if job:
-            #         scheduler.remove_job(f"reschedule_{plant_id}")
-            #     scheduler.add_job(func=reschedule,
-            #                       trigger="cron",
-            #                       minute=0,
-            #                       hour=2,
-            #                       id=f"reschedule_{plant_id}",
-            #                       name=f"reschedule_{plant_id}")
-            #     scheduler.run_job(f"reschedule_{plant_id}")
-            # else:
-            #     job = scheduler.get_job(f"reschedule_{plant_id}")
-            #     current_app.logger.debug(job)
         # prefill forms with current configuration
         config_form.enabled.default = plant_selected.config.enabled
         config_form.duration_sec.default = plant_selected.config.duration_sec
@@ -119,12 +102,14 @@ def configure(plant_id):
         config_form.rain_reset.default = plant_selected.config.rain_reset
         config_form.threshold_mm.default = plant_selected.config.threshold_mm
         config_form.process()
+        active_job = scheduler.get_job(f"plant_{plant_id}")
         plants_available = Plant.query.order_by(Plant.id).all()
         return render_template("water/configure.html",
                                user=current_user,
                                plant_selected=plant_selected,
                                config_form=config_form,
-                               plants_available=plants_available)
+                               plants_available=plants_available,
+                               active_job=active_job)
     else:
         flash("Does not exist", category="error")
         return redirect(url_for("water_bp.configure_check"))
@@ -133,10 +118,7 @@ def configure(plant_id):
 @water_bp.context_processor
 def utility():
     def format_date(datetime_obj):
-        if datetime_obj is None:
-            return "Disabled"
-        else:
-            return datetime_obj.strftime("%d-%b %H:%M:%S")
+        return datetime_obj.strftime("%d-%b %H:%M:%S")
     return dict(format_date=format_date)
 
 
@@ -163,14 +145,10 @@ def water(plant_id):
             if plant_selected.status:
                 flash("Already Runnning", category="error")
             else:
-                plant_selected.status = True
-                duration_sec = water_form.duration_sec.data
-                plant_selected.history.append(History(start_date_time=datetime.now(), duration_sec=duration_sec))
-                db.session.commit()
-                current_app.logger.debug(f"Set status of '{plant_selected.name}' to {plant_selected.status}")
-                current_app.logger.info(f"Watering '{plant_selected.name}' for {duration_sec} seconds")
                 thread = Thread(target=process,
-                                args=(current_app._get_current_object(), duration_sec, plant_id),
+                                args=(current_app._get_current_object(),
+                                      water_form.duration_sec.data,
+                                      plant_id),
                                 daemon=True)
                 thread.start()
                 current_app.logger.debug("Started thread")
@@ -207,9 +185,6 @@ def cancel(plant_id):
         if plant_selected.status:
             events[plant_selected.name].set()
             current_app.logger.debug(f"Set event for '{plant_selected.name}'")
-            # duplicate set status so page is updated when process cancelled?
-            plant_selected.status = False
-            db.session.commit()
             flash("Stopped Process", category="success")
         else:
             flash("Not Running", category="error")
@@ -217,32 +192,3 @@ def cancel(plant_id):
     else:
         flash("Does not exist", category="error")
         return redirect(url_for("water_bp.water_check"))
-
-
-def process(app, duration_sec, plant_id):
-    """Watering process."""
-    with app.app_context():
-        plant_selected = Plant.query.filter(Plant.id == plant_id).first()
-        event = events[plant_selected.name]
-        app.logger.debug(f"Started watering process for '{plant_selected.name}'")
-        plant_selected.system.obj.on()
-        loop(app, duration_sec, event)
-        plant_selected.system.obj.off()
-        plant_selected.status = False
-        db.session.commit()
-        app.logger.debug(f"Set status of '{plant_selected.name}' to {plant_selected.status}")
-        app.logger.debug(f"Finished watering process for '{plant_selected.name}'")
-    return
-
-
-def loop(app, duration_sec, event):
-    """Inner loop of watering process."""
-    app.logger.debug("Loop started")
-    for x in range(duration_sec):
-        time.sleep(1)
-        if event.is_set():
-            app.logger.debug("Loop cancelled")
-            event.clear()
-            return
-    app.logger.debug("Loop stopped")
-    return
