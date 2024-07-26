@@ -2,7 +2,7 @@ from flask import render_template, flash, current_app, redirect, url_for, reques
 from flask_login import login_required, current_user
 from app.water.models import Config, Plant, System
 from app.water.forms import WaterForm, ConfigForm, PlantForm
-from app.water.jobs import get_estimate, add_job, process, remove_job, log_active_jobs
+from app.water.jobs import get_due_date, process, remove_jobs, add_jobs
 from app.water import water_bp
 from app import db, events, scheduler
 from threading import Thread, Event
@@ -74,7 +74,7 @@ def configure(plant_id):
         config_form = ConfigForm()
         if request.method == "POST" and config_form.validate():
             # remove existing jobs when config is updated
-            remove_job(plant_selected)
+            remove_jobs(plant_id)
             # why is double query needed? doesn't work with just above
             plant_selected = Plant.query.filter(Plant.id == plant_id).first()
             plant_selected.config.enabled = config_form.enabled.data
@@ -86,11 +86,11 @@ def configure(plant_id):
             plant_selected.config.threshold_mm = config_form.threshold_mm.data
             plant_selected.config.last_edit = datetime.now().replace(microsecond=0)
             if plant_selected.config.enabled:
-                plant_selected.config.estimate = get_estimate(plant_selected.config)
-                current_app.logger.debug(f"Estimate for '{plant_selected.name}' set to {plant_selected.config.estimate}")
-                add_job(plant_selected)
+                #plant_selected.config.job_init = datetime.now().replace(microsecond=0)
+                plant_selected.config.job_due = get_due_date(plant_selected.config, plant_selected.config.last_edit)
+                add_jobs(plant_selected)
             else:
-                plant_selected.config.estimate = None
+                plant_selected.config.job_due = None
             db.session.commit()
             current_app.logger.debug(f"Config for '{plant_selected.name}' updated")
         # prefill forms with current configuration
@@ -102,14 +102,16 @@ def configure(plant_id):
         config_form.rain_reset.default = plant_selected.config.rain_reset
         config_form.threshold_mm.default = plant_selected.config.threshold_mm
         config_form.process()
-        active_job = scheduler.get_job(f"plant_{plant_id}")
+        job_water = scheduler.get_job(f"Water{plant_id}")
+        job_reschedule = scheduler.get_job(f"Reschedule{plant_id}")
         plants_available = Plant.query.order_by(Plant.id).all()
         return render_template("water/configure.html",
                                user=current_user,
                                plant_selected=plant_selected,
                                config_form=config_form,
                                plants_available=plants_available,
-                               active_job=active_job)
+                               job_water=job_water,
+                               job_reschedule=job_reschedule)
     else:
         flash("Does not exist", category="error")
         return redirect(url_for("water_bp.configure_check"))
@@ -118,7 +120,10 @@ def configure(plant_id):
 @water_bp.context_processor
 def utility():
     def format_date(datetime_obj):
-        return datetime_obj.strftime("%d-%b %H:%M:%S")
+        if datetime_obj:
+            return datetime_obj.strftime("%d-%b %H:%M:%S")
+        else:
+            return ""
     return dict(format_date=format_date)
 
 
