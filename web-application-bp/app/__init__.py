@@ -32,6 +32,11 @@ def create_app():
 
     # initialise databases
     db.init_app(app)
+    from app.auth.models import User
+    from app.weather.models import Day, Weather
+    from app.water.models import System, Plant, History, Config
+    with app.app_context():
+        db.create_all()
 
     # initialise scheduler
     scheduler.init_app(app)
@@ -41,7 +46,6 @@ def create_app():
     from app.core import core_bp
     app.register_blueprint(core_bp)
     from app.core import commands as core_cmds
-    app.cli.add_command(core_cmds.init_db)
     app.cli.add_command(core_cmds.drop_db)
 
     # auth module setup
@@ -49,7 +53,6 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix="/auth")
     from app.auth import commands as auth_cmds
     app.cli.add_command(auth_cmds.create_user)
-    from app.auth.models import User
     login_manager.login_view = "auth_bp.login"
     login_manager.login_message = "Please login"
     login_manager.login_message_category = "info"
