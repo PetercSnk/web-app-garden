@@ -53,7 +53,8 @@ class Config(db.Model):
     rain_reset = db.Column(db.Boolean)
     threshold_mm = db.Column(db.Integer)
     last_edit = db.Column(db.DateTime)
-    estimate = db.Column(db.DateTime)
+    job_init = db.Column(db.DateTime)
+    job_due = db.Column(db.DateTime)
 
     def __repr__(self):
         return f"<Config: {self.id}>"
