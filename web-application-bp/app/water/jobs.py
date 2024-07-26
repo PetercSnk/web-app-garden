@@ -1,11 +1,10 @@
 from app.water.models import Plant, History
-import time
 from app import db, scheduler, events
-import pytz
-import openmeteo_requests
 from datetime import timedelta, datetime
 from suntime import Sun
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
+import openmeteo_requests
+import time
+import pytz
 
 
 def get_sun_tz():
@@ -15,53 +14,60 @@ def get_sun_tz():
     return sun, tz
 
 
-def get_estimate(config):
-    """Get the next earliest estimate for watering."""
-    estimate = config.last_edit + timedelta(days=config.occurrence_days)
+def get_due_date(config, date):
+    """Get the next due date for watering."""
+    due = date + timedelta(days=config.occurrence_days)
     if config.mode == 1:
         sun, tz = get_sun_tz()
-        sunset = sun.get_sunset_time(estimate, tz).time()
-        estimate = estimate.replace(hour=sunset.hour, minute=sunset.minute, second=sunset.second)
+        sunset = sun.get_sunset_time(due, tz).time()
+        due = due.replace(hour=sunset.hour, minute=sunset.minute, second=sunset.second)
     elif config.mode == 2:
         sun, tz = get_sun_tz()
-        sunrise = sun.get_sunrise_time(estimate, tz).time()
-        estimate = estimate.replace(hour=sunrise.hour, minute=sunrise.minute, second=sunrise.second)
+        sunrise = sun.get_sunrise_time(due, tz).time()
+        due = due.replace(hour=sunrise.hour, minute=sunrise.minute, second=sunrise.second)
     else:
         default = config.default
-        estimate = estimate.replace(hour=default.hour, minute=default.minute, second=default.second)
-    return estimate
+        due = due.replace(hour=default.hour, minute=default.minute, second=default.second)
+    return due
 
 
-def log_active_jobs():
-    jobs = scheduler.get_jobs()
+def remove_jobs(plant_id):
+    """Remove existing jobs for plant."""
+    jobs = [f"Water{plant_id}", f"Reschedule{plant_id}"]
     for job in jobs:
-        scheduler.app.logger.debug(f"Active job '{job.name}' scheduled for {job.next_run_time}")
+        if scheduler.get_job(job):
+            scheduler.remove_job(job)
     return
 
 
-def remove_job(plant):
-    """Remove existing jobs."""
-    job_name = f"plant_{plant.id}"
-    if scheduler.get_job(job_name):
-        scheduler.remove_job(job_name)
-        scheduler.app.logger.debug(f"Removed job '{job_name}'")
-    return
-
-
-def add_job(plant):
-    job_name = f"plant_{plant.id}"
+def add_jobs(plant):
+    """Schedule main water process & reschedule for plant."""
+    job_water = f"Water{plant.id}"
     scheduler.add_job(func=task,
                       trigger="date",
-                      run_date=plant.config.estimate,
-                      id=job_name,
-                      name=job_name,
-                      args=[job_name])
-    scheduler.app.logger.debug(f"Added job for {plant.name}")
+                      run_date=plant.config.job_due,
+                      id=job_water,
+                      name=job_water,
+                      args=["ARG TEMP"])
+    job_reschedule = f"Reschedule{plant.id}"
+    scheduler.add_job(func=reschedule,
+                      trigger="date",
+                      run_date=plant.config.job_due - timedelta(minutes=5),
+                      id=job_reschedule,
+                      name=job_reschedule,
+                      args=[1])
+    return
+
+
+def reschedule(plant_id):
+    """TODO"""
+    scheduler.app.logger.debug("RESCHEDULE")
     return
 
 
 def task(arg):
-    scheduler.app.logger.debug(f"RUNNING JOB {arg}")
+    """TODO"""
+    scheduler.app.logger.debug("TASK")
     return
 
 
@@ -78,8 +84,8 @@ def check_rain(plant):
         "longitude": scheduler.app.config["LONGITUDE"],
         "daily": "precipitation_sum",
         "timezone": scheduler.app.config["TIMEZONE"],
-        "start_date": plant.config.last_edit.date(),
-        "end_date": plant.config.estimate.date()
+        "start_date": plant.config.job_init.date(),
+        "end_date": plant.config.job_due.date()
     }
     om = openmeteo_requests.Client()
     responses = om.weather_api(url, params=params)
@@ -93,12 +99,9 @@ def check_rain(plant):
 
 
 """TODO
-func to add job @ estimated date
-func to check if rain
 reschedule job if rains
-only start job if config enabled
-stop job if disabled
 start all jobs on restart using estimate in db and if config enabled
+job that runs 5 mins before, checks rain and reschedules job with reschedule_job?
 """
 
 
@@ -133,11 +136,3 @@ def loop(app, duration_sec, event):
             return
     app.logger.debug("Loop stopped")
     return
-
-
-def listener_callback(event):
-    with scheduler.app.app_context():
-        print(event)
-
-
-scheduler.add_listener(listener_callback, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
