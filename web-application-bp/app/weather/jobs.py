@@ -4,7 +4,6 @@ from datetime import datetime
 from suntime import Sun
 import requests
 import traceback
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 import pytz
 
 
@@ -123,11 +122,3 @@ def delete_old_records():
             db.session.commit()
     scheduler.app.logger.debug(f"Deleted {delete_log} from database")
     return
-
-
-def listener_callback(event):
-    with scheduler.app.app_context():
-        print(event)
-
-
-scheduler.add_listener(listener_callback, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
