@@ -31,47 +31,41 @@ def get_due_date(config, date):
     return due
 
 
-def remove_jobs(plant_id):
+def remove_job(plant_id):
     """Remove existing jobs for plant."""
-    jobs = [f"Water{plant_id}", f"Reschedule{plant_id}"]
-    for job in jobs:
-        if scheduler.get_job(job):
-            scheduler.remove_job(job)
+    job = f"auto_water{plant_id}"
+    if job:
+        scheduler.remove_job(job)
     return
 
 
-def add_jobs(plant):
+def schedule_job(plant):
     """Schedule main water process & reschedule for plant."""
-    job_water = f"Water{plant.id}"
-    scheduler.add_job(func=task,
+    job = f"auto_water{plant.id}"
+    scheduler.add_job(func=auto_water,
                       trigger="date",
                       run_date=plant.config.job_due,
-                      id=job_water,
-                      name=job_water,
-                      args=["ARG TEMP"])
-    job_reschedule = f"Reschedule{plant.id}"
-    scheduler.add_job(func=reschedule,
-                      trigger="date",
-                      run_date=plant.config.job_due - timedelta(minutes=5),
-                      id=job_reschedule,
-                      name=job_reschedule,
-                      args=[1])
+                      id=job,
+                      name=job,
+                      args=[plant.id])
     return
 
 
-def reschedule(plant_id):
+def auto_water(plant_id):
     """TODO"""
-    scheduler.app.logger.debug("RESCHEDULE")
+    with scheduler.app.app_context():
+        plant_selected = Plant.query.filter(Plant.id == plant_id).first()
+        if not plant_selected.config.rain_reset or not check_rain(plant_selected.config):
+            process(plant_selected.config.duration_sec, plant_id)
+        now = datetime.now().replace(microsecond=0)
+        plant_selected.config.job_init = now
+        plant_selected.config.job_due = get_due_date(plant_selected.config, now)
+        schedule_job(plant_selected)
+        db.session.commit()
     return
 
 
-def task(arg):
-    """TODO"""
-    scheduler.app.logger.debug("TASK")
-    return
-
-
-def check_rain(plant):
+def check_rain(config):
     """Returns true if rainfall meets threshold.
 
     Move url to config, redo weather with this api
@@ -84,15 +78,15 @@ def check_rain(plant):
         "longitude": scheduler.app.config["LONGITUDE"],
         "daily": "precipitation_sum",
         "timezone": scheduler.app.config["TIMEZONE"],
-        "start_date": plant.config.job_init.date(),
-        "end_date": plant.config.job_due.date()
+        "start_date": config.job_init.date(),
+        "end_date": config.job_due.date()
     }
     om = openmeteo_requests.Client()
     responses = om.weather_api(url, params=params)
     response = responses[0]
     daily = response.Daily()
     rain_sum = sum(daily.Variables(0).ValuesAsNumpy())
-    if rain_sum >= plant.config.threshold_mm:
+    if rain_sum >= config.threshold_mm:
         return True
     else:
         return False
@@ -105,34 +99,34 @@ job that runs 5 mins before, checks rain and reschedules job with reschedule_job
 """
 
 
-def process(app, duration_sec, plant_id):
+def process(duration_sec, plant_id):
     """Watering process."""
-    with app.app_context():
+    with scheduler.app.app_context():
         plant_selected = Plant.query.filter(Plant.id == plant_id).first()
         plant_selected.status = True
         plant_selected.history.append(History(start_date_time=datetime.now(), duration_sec=duration_sec))
         db.session.commit()
-        app.logger.debug(f"Set status of '{plant_selected.name}' to {plant_selected.status}")
-        app.logger.info(f"Watering '{plant_selected.name}' for {duration_sec} seconds")
+        scheduler.app.logger.debug(f"Set status of '{plant_selected.name}' to {plant_selected.status}")
+        scheduler.app.logger.debug(f"Watering '{plant_selected.name}' for {duration_sec} seconds")
         event = events[plant_selected.name]
         plant_selected.system.obj.on()
-        loop(app, duration_sec, event)
+        loop(duration_sec, event)
         plant_selected.system.obj.off()
         plant_selected.status = False
         db.session.commit()
-        app.logger.debug(f"Set status of '{plant_selected.name}' to {plant_selected.status}")
-        app.logger.debug(f"Finished watering process for '{plant_selected.name}'")
+        scheduler.app.logger.debug(f"Set status of '{plant_selected.name}' to {plant_selected.status}")
+        scheduler.app.logger.debug(f"Finished watering process for '{plant_selected.name}'")
     return
 
 
-def loop(app, duration_sec, event):
+def loop(duration_sec, event):
     """Inner loop of watering process."""
-    app.logger.debug("Loop started")
+    scheduler.app.logger.debug("Loop started")
     for x in range(duration_sec):
         time.sleep(1)
         if event.is_set():
-            app.logger.debug("Loop cancelled")
+            scheduler.app.logger.debug("Loop cancelled")
             event.clear()
             return
-    app.logger.debug("Loop stopped")
+    scheduler.app.logger.debug("Loop stopped")
     return
