@@ -2,10 +2,10 @@ from flask import render_template, flash, current_app, redirect, url_for, reques
 from flask_login import login_required, current_user
 from app.water.models import Config, Plant, System
 from app.water.forms import WaterForm, ConfigForm, PlantForm
-from app.water.jobs import get_due_date, process, remove_jobs, add_jobs
+from app.water.jobs import get_due_date, process, remove_job, schedule_job
 from app.water import water_bp
 from app import db, events, scheduler
-from threading import Thread, Event
+from threading import Event
 from datetime import datetime
 
 
@@ -74,8 +74,9 @@ def configure(plant_id):
         config_form = ConfigForm()
         if request.method == "POST" and config_form.validate():
             # remove existing jobs when config is updated
-            remove_jobs(plant_id)
+            remove_job(plant_id)
             # why is double query needed? doesn't work with just above
+            now = datetime.now().replace(microsecond=0)
             plant_selected = Plant.query.filter(Plant.id == plant_id).first()
             plant_selected.config.enabled = config_form.enabled.data
             plant_selected.config.duration_sec = config_form.duration_sec.data
@@ -84,12 +85,13 @@ def configure(plant_id):
             plant_selected.config.default = config_form.default.data
             plant_selected.config.rain_reset = config_form.rain_reset.data
             plant_selected.config.threshold_mm = config_form.threshold_mm.data
-            plant_selected.config.last_edit = datetime.now().replace(microsecond=0)
+            plant_selected.config.last_edit = now
             if plant_selected.config.enabled:
-                #plant_selected.config.job_init = datetime.now().replace(microsecond=0)
-                plant_selected.config.job_due = get_due_date(plant_selected.config, plant_selected.config.last_edit)
-                add_jobs(plant_selected)
+                plant_selected.config.job_init = now
+                plant_selected.config.job_due = get_due_date(plant_selected.config, now)
+                schedule_job(plant_selected)
             else:
+                plant_selected.config.job_init = None
                 plant_selected.config.job_due = None
             db.session.commit()
             current_app.logger.debug(f"Config for '{plant_selected.name}' updated")
@@ -150,13 +152,11 @@ def water(plant_id):
             if plant_selected.status:
                 flash("Already Runnning", category="error")
             else:
-                thread = Thread(target=process,
-                                args=(current_app._get_current_object(),
-                                      water_form.duration_sec.data,
-                                      plant_id),
-                                daemon=True)
-                thread.start()
-                current_app.logger.debug("Started thread")
+                scheduler.add_job(func=process,
+                                  id="manual_water",
+                                  name="manual_water",
+                                  args=[water_form.duration_sec.data, plant_id])
+                current_app.logger.debug("Started manual water process")
                 flash("Started Process", category="success")
         plants_available = Plant.query.order_by(Plant.id).all()
         return render_template("water/water.html",
