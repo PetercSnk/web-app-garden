@@ -9,9 +9,9 @@
     {% endfor %}
     <h2>Selected Plant: {{ plant_selected.name }}</h2>
     <h3>Last Edit: {{ format_date(plant_selected.config.last_edit) }}</h3>
-    {% if job_water and job_reschedule %}
-        <h3>Active Jobs: {{ job_water.name }}, {{ job_reschedule.name }}</h3>
-        <h3>Scheduled Dates: {{ format_date(job_water.next_run_time) }}, {{ format_date(job_reschedule.next_run_time) }}</h3>
+    {% if active_job %}
+        <h3>Active Job: {{ active_job.name }}</h3>
+        <h3>Scheduled Date: {{ format_date(active_job.next_run_time) }}</h3>
     {% else %}
         <h3>Disabled</h3>
     {% endif %}
