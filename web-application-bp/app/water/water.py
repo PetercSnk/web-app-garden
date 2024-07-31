@@ -2,7 +2,7 @@ from flask import render_template, flash, current_app, redirect, url_for, reques
 from flask_login import login_required, current_user
 from app.water.models import Config, Plant, System
 from app.water.forms import WaterForm, ConfigForm, PlantForm
-from app.water.jobs import get_due_date, process, remove_job, schedule_job
+from app.water.jobs import process, remove_job, schedule_job, get_due_date
 from app.water import water_bp
 from app import db, events, scheduler
 from threading import Event
@@ -74,10 +74,8 @@ def configure(plant_id):
         config_form = ConfigForm()
         if request.method == "POST" and config_form.validate():
             # remove existing jobs when config is updated
-            remove_job(plant_id)
-            # why is double query needed? doesn't work with just above
+            remove_job(plant_selected.id)
             now = datetime.now().replace(microsecond=0)
-            plant_selected = Plant.query.filter(Plant.id == plant_id).first()
             plant_selected.config.enabled = config_form.enabled.data
             plant_selected.config.duration_sec = config_form.duration_sec.data
             plant_selected.config.occurrence_days = config_form.occurrence_days.data
@@ -90,9 +88,6 @@ def configure(plant_id):
                 plant_selected.config.job_init = now
                 plant_selected.config.job_due = get_due_date(plant_selected.config, now)
                 schedule_job(plant_selected)
-            else:
-                plant_selected.config.job_init = None
-                plant_selected.config.job_due = None
             db.session.commit()
             current_app.logger.debug(f"Config for '{plant_selected.name}' updated")
         # prefill forms with current configuration
@@ -104,16 +99,14 @@ def configure(plant_id):
         config_form.rain_reset.default = plant_selected.config.rain_reset
         config_form.threshold_mm.default = plant_selected.config.threshold_mm
         config_form.process()
-        job_water = scheduler.get_job(f"Water{plant_id}")
-        job_reschedule = scheduler.get_job(f"Reschedule{plant_id}")
+        active_job = scheduler.get_job(f"auto_water{plant_selected.id}")
         plants_available = Plant.query.order_by(Plant.id).all()
         return render_template("water/configure.html",
                                user=current_user,
                                plant_selected=plant_selected,
                                config_form=config_form,
                                plants_available=plants_available,
-                               job_water=job_water,
-                               job_reschedule=job_reschedule)
+                               active_job=active_job)
     else:
         flash("Does not exist", category="error")
         return redirect(url_for("water_bp.configure_check"))
@@ -152,10 +145,11 @@ def water(plant_id):
             if plant_selected.status:
                 flash("Already Runnning", category="error")
             else:
+                job_name = f"manual_water{plant_selected.id}"
                 scheduler.add_job(func=process,
-                                  id="manual_water",
-                                  name="manual_water",
-                                  args=[water_form.duration_sec.data, plant_id])
+                                  id=job_name,
+                                  name=job_name,
+                                  args=[water_form.duration_sec.data, plant_selected.id])
                 current_app.logger.debug("Started manual water process")
                 flash("Started Process", category="success")
         plants_available = Plant.query.order_by(Plant.id).all()
@@ -193,7 +187,7 @@ def cancel(plant_id):
             flash("Stopped Process", category="success")
         else:
             flash("Not Running", category="error")
-        return redirect(url_for("water_bp.water", plant_id=plant_id))
+        return redirect(url_for("water_bp.water", plant_id=plant_selected.id))
     else:
         flash("Does not exist", category="error")
         return redirect(url_for("water_bp.water_check"))
