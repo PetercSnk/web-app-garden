@@ -1,8 +1,10 @@
 from app.water.models import Plant, System
+from app.water.jobs import schedule_job, get_due_date
 from app.water import systems
 from app import db, events
 from threading import Event
 import inspect
+from datetime import datetime
 
 
 def get_classes(package):
@@ -38,9 +40,16 @@ def init_plants():
     Run this function on startup.
     """
     plants = Plant.query.all()
-    if plants:
-        for plant in plants:
-            events[plant.name] = Event()
-            plant.status = False
-        db.session.commit()
+    for plant in plants:
+        events[plant.name] = Event()
+        plant.status = False
+        if plant.config.enabled:
+            now = datetime.now().replace(microsecond=0)
+            if now < plant.config.job_due:
+                schedule_job(plant)
+            else:
+                plant.config.job_init = now
+                plant.config.job_due = get_due_date(plant.config, now)
+                schedule_job(plant)
+    db.session.commit()
     return
