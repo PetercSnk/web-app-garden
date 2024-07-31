@@ -32,36 +32,36 @@ def get_due_date(config, date):
 
 
 def remove_job(plant_id):
-    """Remove existing jobs for plant."""
+    """Remove existing job for plant."""
     job = f"auto_water{plant_id}"
-    if job:
+    if scheduler.get_job(job):
         scheduler.remove_job(job)
     return
 
 
 def schedule_job(plant):
-    """Schedule main water process & reschedule for plant."""
-    job = f"auto_water{plant.id}"
+    """Schedule water process."""
+    job_name = f"auto_water{plant.id}"
     scheduler.add_job(func=auto_water,
                       trigger="date",
                       run_date=plant.config.job_due,
-                      id=job,
-                      name=job,
+                      id=job_name,
+                      name=job_name,
                       args=[plant.id])
     return
 
 
 def auto_water(plant_id):
-    """TODO"""
+    """Executes water process only if criteria is not met."""
     with scheduler.app.app_context():
-        plant_selected = Plant.query.filter(Plant.id == plant_id).first()
-        if not plant_selected.config.rain_reset or not check_rain(plant_selected.config):
-            process(plant_selected.config.duration_sec, plant_id)
+        plant = Plant.query.filter(Plant.id == plant_id).first()
+        if not plant.config.rain_reset or not check_rain(plant.config):
+            process(plant.config.duration_sec, plant.id)
         now = datetime.now().replace(microsecond=0)
-        plant_selected.config.job_init = now
-        plant_selected.config.job_due = get_due_date(plant_selected.config, now)
-        schedule_job(plant_selected)
+        plant.config.job_init = now
+        plant.config.job_due = get_due_date(plant.config, now)
         db.session.commit()
+        schedule_job(plant)
     return
 
 
@@ -92,15 +92,8 @@ def check_rain(config):
         return False
 
 
-"""TODO
-reschedule job if rains
-start all jobs on restart using estimate in db and if config enabled
-job that runs 5 mins before, checks rain and reschedules job with reschedule_job?
-"""
-
-
 def process(duration_sec, plant_id):
-    """Watering process."""
+    """Water process."""
     with scheduler.app.app_context():
         plant_selected = Plant.query.filter(Plant.id == plant_id).first()
         plant_selected.status = True
@@ -120,7 +113,7 @@ def process(duration_sec, plant_id):
 
 
 def loop(duration_sec, event):
-    """Inner loop of watering process."""
+    """Inner loop of water process."""
     scheduler.app.logger.debug("Loop started")
     for x in range(duration_sec):
         time.sleep(1)
