@@ -86,7 +86,7 @@ def configure(plant_id):
             plant_selected.config.last_edit = now
             if plant_selected.config.enabled:
                 plant_selected.config.job_init = now
-                plant_selected.config.job_due = get_due_date(plant_selected.config, now)
+                plant_selected.config.job_due = get_due_date(plant_selected.config)
                 schedule_job(plant_selected)
             db.session.commit()
             current_app.logger.debug(f"Config for '{plant_selected.name}' updated")
