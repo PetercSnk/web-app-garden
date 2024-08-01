@@ -33,9 +33,9 @@ def init_systems():
     return
 
 
-def init_plants():
+def init_plants(app):
     """
-    Reset statuses & create event obj for each plant.
+    Reset status, schedule job & create event obj for each plant.
 
     Run this function on startup.
     """
@@ -45,11 +45,9 @@ def init_plants():
         plant.status = False
         if plant.config.enabled:
             now = datetime.now().replace(microsecond=0)
-            if now < plant.config.job_due:
-                schedule_job(plant)
-            else:
+            if now >= plant.config.job_due:
                 plant.config.job_init = now
-                plant.config.job_due = get_due_date(plant.config, now)
-                schedule_job(plant)
+                plant.config.job_due = get_due_date(plant.config)
+            schedule_job(plant)
     db.session.commit()
     return
