@@ -58,6 +58,7 @@ def delete(plant_id):
     if plant_selected:
         flash("Deleted plant", category="success")
         events.pop(plant_selected.name)
+        remove_job(plant_selected.id)
         db.session.delete(plant_selected)
         db.session.commit()
         current_app.logger.debug(f"Deleted plant '{plant_selected.name}'")
