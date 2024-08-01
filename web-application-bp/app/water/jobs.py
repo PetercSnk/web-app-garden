@@ -1,3 +1,4 @@
+"""All functions required for scheduling and executing water process."""
 from app.water.models import Plant, History
 from app import db, scheduler, events
 from datetime import timedelta, datetime
@@ -8,15 +9,25 @@ import pytz
 
 
 def get_sun_tz():
-    """Return sun and timezone object."""
+    """Creates and returns a sun and timezone object based on app config."""
     sun = Sun(scheduler.app.config["LATITUDE"], scheduler.app.config["LONGITUDE"])
     tz = pytz.timezone(scheduler.app.config["TIMEZONE"])
     return sun, tz
 
 
-def get_due_date(config, date):
-    """Get the next due date for watering."""
-    due = date + timedelta(days=config.occurrence_days)
+def get_due_date(config):
+    """Gets the due date for scheduling the water process.
+
+    Adds the value of occurrence_days to current date where the time is
+    then replaced with the corresponding sunrise, sunset, or default value.
+
+    Args:
+        config: An entry in the config table for a plant.
+
+    Returns:
+        A datetime object.
+    """
+    due = datetime.now().replace(microsecond=0) + timedelta(days=config.occurrence_days)
     if config.mode == 1:
         sun, tz = get_sun_tz()
         sunset = sun.get_sunset_time(due, tz).time()
@@ -32,7 +43,7 @@ def get_due_date(config, date):
 
 
 def remove_job(plant_id):
-    """Remove existing job for plant."""
+    """Removes job auto_water from scheduler for the given plant."""
     job = f"auto_water{plant_id}"
     if scheduler.get_job(job):
         scheduler.remove_job(job)
@@ -40,7 +51,7 @@ def remove_job(plant_id):
 
 
 def schedule_job(plant):
-    """Schedule water process."""
+    """Adds job auto_water to scheduler for the given plant."""
     job_name = f"auto_water{plant.id}"
     scheduler.add_job(func=auto_water,
                       trigger="date",
@@ -52,16 +63,24 @@ def schedule_job(plant):
 
 
 def auto_water(plant_id):
-    """Executes water process only if criteria is not met."""
+    """Function used by scheduler for automatic execution of water process.
+
+    Executes water process only if rain_reset is enabled in the plants config
+    and check_rain returns true. This job is then added back to the scheduler
+    under the same name and id for a new due date.
+
+    Args:
+        plant_id: The id assigned to an entry in the plant table.
+    """
     with scheduler.app.app_context():
         plant = Plant.query.filter(Plant.id == plant_id).first()
         if not plant.config.rain_reset or not check_rain(plant.config):
             process(plant.config.duration_sec, plant.id)
         now = datetime.now().replace(microsecond=0)
         plant.config.job_init = now
-        plant.config.job_due = get_due_date(plant.config, now)
-        db.session.commit()
+        plant.config.job_due = get_due_date(plant.config)
         schedule_job(plant)
+        db.session.commit()
     return
 
 
