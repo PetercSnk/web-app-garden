@@ -13,7 +13,8 @@ def core_index():
 def job_added(event):
     """Job added callback."""
     with scheduler.app.app_context():
-        scheduler.app.logger.debug(f"Added job '{event.job_id}'")
+        job = scheduler.get_job(event.job_id)
+        scheduler.app.logger.debug(f"Added job '{job.id}' @ {job.next_run_time}")
 
 
 def job_removed(event):
