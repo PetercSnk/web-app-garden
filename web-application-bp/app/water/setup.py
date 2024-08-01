@@ -1,14 +1,15 @@
+"""Functions that are required to execute on startup for the water module."""
 from app.water.models import Plant, System
 from app.water.jobs import schedule_job, get_due_date
 from app.water import systems
 from app import db, events
 from threading import Event
-import inspect
 from datetime import datetime
+import inspect
 
 
 def get_classes(package):
-    """Get all classes in package."""
+    """Retrieves all classes in package."""
     classes = []
     for name, _class in inspect.getmembers(package):
         if inspect.isclass(_class):
@@ -18,7 +19,7 @@ def get_classes(package):
 
 def init_systems():
     """
-    Reset & load available systems into database.
+    Resets and inserts available systems into system table.
 
     Run this function on startup.
     """
@@ -35,7 +36,7 @@ def init_systems():
 
 def init_plants(app):
     """
-    Reset status, schedule job & create event obj for each plant.
+    Resets statuses, schedules jobs and creates event obj's for plants.
 
     Run this function on startup.
     """

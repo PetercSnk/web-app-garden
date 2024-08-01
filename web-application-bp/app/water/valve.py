@@ -1,3 +1,4 @@
+"""Required for using outdoor valve."""
 import time
 import RPi.GPIO as GPIO
 

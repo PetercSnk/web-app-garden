@@ -1,3 +1,4 @@
+"""Routes for the water module."""
 from flask import render_template, flash, current_app, redirect, url_for, request
 from flask_login import login_required, current_user
 from app.water.models import Config, Plant, System
@@ -12,7 +13,7 @@ from datetime import datetime
 @water_bp.route("/setup", methods=["GET", "POST"])
 @login_required
 def setup():
-    """Create plants & assign a default config & event obj."""
+    """Create plants and assign a default config and event obj."""
     plant_form = PlantForm()
     systems_in_use = [plant.system.id for plant in Plant.query.all()]
     systems_available = []
@@ -52,7 +53,7 @@ def setup():
 @water_bp.route("/delete/<int:plant_id>", methods=["GET", "POST"])
 @login_required
 def delete(plant_id):
-    """Delete plants & all relationships."""
+    """Delete plants and all relationships."""
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         flash("Deleted plant", category="success")

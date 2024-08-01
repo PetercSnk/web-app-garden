@@ -1,8 +1,9 @@
+"""All tables used by the water module."""
 from app import db
 
 
 class System(db.Model):
-    """Connected systems/devices."""
+    """Connected systems and devices."""
     __bind_key__ = "water"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)

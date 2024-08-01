@@ -1,3 +1,4 @@
+"""Required for using outdoor pump."""
 import RPi.GPIO as GPIO
 
 

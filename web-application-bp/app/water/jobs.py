@@ -1,4 +1,4 @@
-"""All functions required for scheduling and executing water process."""
+"""All functions required for scheduling and executing the watering process."""
 from app.water.models import Plant, History
 from app import db, scheduler, events
 from datetime import timedelta, datetime
@@ -9,17 +9,18 @@ import pytz
 
 
 def get_sun_tz():
-    """Creates and returns a sun and timezone object based on app config."""
+    """Creates and returns a sun and timezone object based on the flask config."""
     sun = Sun(scheduler.app.config["LATITUDE"], scheduler.app.config["LONGITUDE"])
     tz = pytz.timezone(scheduler.app.config["TIMEZONE"])
     return sun, tz
 
 
 def get_due_date(config):
-    """Gets the due date for scheduling the water process.
+    """Retrieves the date to be used when scheduling the automated watering process.
 
-    Adds the value of occurrence_days to current date where the time is
-    then replaced with the corresponding sunrise, sunset, or default value.
+    Converts the value of occurence_days within config to a datetime object which is then
+    added to the current date. This date then has its time replaced with the corresponding
+    sunrise, sunset, or default value.
 
     Args:
         config: An entry in the config table for a plant.
@@ -43,7 +44,7 @@ def get_due_date(config):
 
 
 def remove_job(plant_id):
-    """Removes job auto_water from scheduler for the given plant."""
+    """Removes the job auto_water from the scheduler for the given plant."""
     job = f"auto_water{plant_id}"
     if scheduler.get_job(job):
         scheduler.remove_job(job)
@@ -51,7 +52,7 @@ def remove_job(plant_id):
 
 
 def schedule_job(plant):
-    """Adds job auto_water to scheduler for the given plant."""
+    """Adds the job auto_water to the scheduler for the given plant."""
     job_name = f"auto_water{plant.id}"
     scheduler.add_job(func=auto_water,
                       trigger="date",
@@ -63,11 +64,12 @@ def schedule_job(plant):
 
 
 def auto_water(plant_id):
-    """Function used by scheduler for automatic execution of water process.
+    """Function used by the scheduler for automatic execution of the watering process.
 
-    Executes water process only if rain_reset is enabled in the plants config
-    and check_rain returns true. This job is then added back to the scheduler
-    under the same name and id for a new due date.
+    The watering process is only skipped when rain_reset is enabled in the plants config
+    and check_rain returns true, otherwise the watering process always executes. The values
+    for job_init and job_due are then updated in the plants config where this job is
+    scheduled again for the new due date.
 
     Args:
         plant_id: The id assigned to an entry in the plant table.
@@ -85,10 +87,10 @@ def auto_water(plant_id):
 
 
 def check_rain(config):
-    """Returns true if rainfall meets threshold.
+    """Returns true if rainfall meets the threshold specified within the config.
 
-    Move url to config, redo weather with this api
-    as its far more suitable.
+    TODO:
+        Move url to config, redo weather with this api as its far more suitable.
 
     """
     url = "https://api.open-meteo.com/v1/forecast"
@@ -112,7 +114,17 @@ def check_rain(config):
 
 
 def process(duration_sec, plant_id):
-    """Water process."""
+    """Enables and disables system objects for a time in seconds.
+
+    The status of the plant is set to true and an entry is added into the history table. The
+    system object assigned to the plant is then enabled where operations halt for the duration.
+    The inner loop used during the halt can be cancelled using the corresponding event. After
+    the duration the system object is turned off and the status of the plant is set to false.
+
+    Args:
+        duration_sec: An integer refering to a time in seconds.
+        plant_id: The id assigned to an entry in the plant table.
+    """
     with scheduler.app.app_context():
         plant_selected = Plant.query.filter(Plant.id == plant_id).first()
         plant_selected.status = True
@@ -132,7 +144,7 @@ def process(duration_sec, plant_id):
 
 
 def loop(duration_sec, event):
-    """Inner loop of water process."""
+    """The inner loop used to halt operations by the watering process."""
     scheduler.app.logger.debug("Loop started")
     for x in range(duration_sec):
         time.sleep(1)
