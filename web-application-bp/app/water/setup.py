@@ -34,7 +34,7 @@ def init_systems():
     return
 
 
-def init_plants(app):
+def init_plants():
     """
     Resets statuses, schedules jobs and creates event obj's for plants.
 
