@@ -1,4 +1,6 @@
 """Routes for the water module."""
+from datetime import datetime
+from threading import Event
 from flask import render_template, flash, current_app, redirect, url_for, request
 from flask_login import login_required, current_user
 from app.water.models import Config, Plant, System
@@ -6,14 +8,12 @@ from app.water.forms import WaterForm, ConfigForm, PlantForm
 from app.water.jobs import process, remove_job, schedule_job, get_due_date
 from app.water import water_bp
 from app import db, events, scheduler
-from threading import Event
-from datetime import datetime
 
 
 @water_bp.route("/setup", methods=["GET", "POST"])
 @login_required
 def setup():
-    """Create plants and assign a default config and event obj."""
+    """Creates plants and assigns default configs and event objs."""
     plant_form = PlantForm()
     systems_in_use = [plant.system.id for plant in Plant.query.all()]
     systems_available = []
@@ -53,7 +53,7 @@ def setup():
 @water_bp.route("/delete/<int:plant_id>", methods=["GET", "POST"])
 @login_required
 def delete(plant_id):
-    """Delete plants and all relationships."""
+    """Deletes plants, related jobs, and events for the given plant id."""
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         flash("Deleted plant", category="success")
@@ -70,7 +70,7 @@ def delete(plant_id):
 @water_bp.route("/configure/<int:plant_id>", methods=["GET", "POST"])
 @login_required
 def configure(plant_id):
-    """Edit plant config settings."""
+    """Configures automated watering settings for the given plant id."""
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         config_form = ConfigForm()
@@ -116,7 +116,9 @@ def configure(plant_id):
 
 @water_bp.context_processor
 def utility():
+    """Context processors for use within html templates."""
     def format_date(datetime_obj):
+        """Formats datetime objects into readable format."""
         if datetime_obj:
             return datetime_obj.strftime("%d-%b %H:%M:%S")
         else:
@@ -127,7 +129,7 @@ def utility():
 @water_bp.route("/configure/check", methods=["GET"])
 @login_required
 def configure_check():
-    """Check if plants exist and redirect accordingly."""
+    """Checks if plants exist and redirects accordingly."""
     plant = Plant.query.first()
     if plant:
         return redirect(url_for("water_bp.configure", plant_id=plant.id))
@@ -139,7 +141,7 @@ def configure_check():
 @water_bp.route("/water/<int:plant_id>", methods=["GET", "POST"])
 @login_required
 def water(plant_id):
-    """Create new thread and start watering process."""
+    """Schedules the watering process now for the given plant id."""
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         water_form = WaterForm()
@@ -168,7 +170,7 @@ def water(plant_id):
 @water_bp.route("/water/check", methods=["GET"])
 @login_required
 def water_check():
-    """Check if plants exist and redirect accordingly."""
+    """Checks if plants exist and redirects accordingly."""
     plant = Plant.query.first()
     if plant:
         return redirect(url_for("water_bp.water", plant_id=plant.id))
@@ -180,7 +182,7 @@ def water_check():
 @water_bp.route("/cancel/<int:plant_id>", methods=["GET", "POST"])
 @login_required
 def cancel(plant_id):
-    """Cancel watering process in thread created by water."""
+    """Cancels manual or automated watering process for the given plant id."""
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
         if plant_selected.status:

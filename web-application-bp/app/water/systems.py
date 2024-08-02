@@ -1,9 +1,9 @@
-"""Classes for systems used by watering process.
+"""Classes for systems used by the watering process.
 
 Ensure a method called on and off are included for each class present.
 These methods will be called during the watering process so make sure
-everything is ok. In the case where multiple systems or devices are used
-for one plant combine them into a single class.
+everything is as mentioned. In the case where multiple systems or devices
+are used for one plant combine them into a single class.
 """
 from flask import current_app
 # from app.water.valve import Valve

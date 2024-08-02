@@ -1,11 +1,11 @@
 """All functions required for scheduling and executing the watering process."""
+import time
+from datetime import timedelta, datetime
+import pytz
+import openmeteo_requests
+from suntime import Sun
 from app.water.models import Plant, History
 from app import db, scheduler, events
-from datetime import timedelta, datetime
-from suntime import Sun
-import openmeteo_requests
-import time
-import pytz
 
 
 def get_sun_tz():
@@ -67,12 +67,11 @@ def auto_water(plant_id):
     """Function used by the scheduler for automatic execution of the watering process.
 
     The watering process is only skipped when rain_reset is enabled in the plants config
-    and check_rain returns true, otherwise the watering process always executes. The values
-    for job_init and job_due are then updated in the plants config where this job is
-    scheduled again for the new due date.
+    and check_rain returns true, otherwise the watering process always executes. The
+    plants config is updated where this job is scheduled again for the new due date.
 
     Args:
-        plant_id: The id assigned to an entry in the plant table.
+        plant_id: Unique id given to a plant.
     """
     with scheduler.app.app_context():
         plant = Plant.query.filter(Plant.id == plant_id).first()
@@ -91,7 +90,6 @@ def check_rain(config):
 
     TODO:
         Move url to config, redo weather with this api as its far more suitable.
-
     """
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
@@ -116,14 +114,14 @@ def check_rain(config):
 def process(duration_sec, plant_id):
     """Enables and disables system objects for a time in seconds.
 
-    The status of the plant is set to true and an entry is added into the history table. The
-    system object assigned to the plant is then enabled where operations halt for the duration.
-    The inner loop used during the halt can be cancelled using the corresponding event. After
-    the duration the system object is turned off and the status of the plant is set to false.
+    Enables the system object assigned to the plant and sleeps for the duration
+    specified. After the duration or upon an event update the system object is
+    disabled. The plant status is updated alongside the system object to ensure
+    the process cannot run in multiple instances
 
     Args:
         duration_sec: An integer refering to a time in seconds.
-        plant_id: The id assigned to an entry in the plant table.
+        plant_id: Unique id given to a plant.
     """
     with scheduler.app.app_context():
         plant_selected = Plant.query.filter(Plant.id == plant_id).first()
@@ -144,7 +142,7 @@ def process(duration_sec, plant_id):
 
 
 def loop(duration_sec, event):
-    """The inner loop used to halt operations by the watering process."""
+    """The inner loop used to sleep by the watering process."""
     scheduler.app.logger.debug("Loop started")
     for x in range(duration_sec):
         time.sleep(1)
