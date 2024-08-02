@@ -75,7 +75,7 @@ def configure(plant_id):
     if plant_selected:
         config_form = ConfigForm()
         if request.method == "POST" and config_form.validate():
-            # remove existing jobs when config is updated
+            # Remove existing jobs when config is updated.
             remove_job(plant_selected.id)
             now = datetime.now().replace(microsecond=0)
             plant_selected.config.enabled = config_form.enabled.data
@@ -92,7 +92,7 @@ def configure(plant_id):
                 schedule_job(plant_selected)
             db.session.commit()
             current_app.logger.debug(f"Config for '{plant_selected.name}' updated")
-        # prefill forms with current configuration
+        # Prefill forms with current plants configuration.
         config_form.enabled.default = plant_selected.config.enabled
         config_form.duration_sec.default = plant_selected.config.duration_sec
         config_form.occurrence_days.default = plant_selected.config.occurrence_days
