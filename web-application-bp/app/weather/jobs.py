@@ -1,10 +1,11 @@
-from app.weather.models import Weather, Day
-from app import db, scheduler
+"""All functions required for scheduling the retrieval of weather data."""
 from datetime import datetime
-from suntime import Sun
 import requests
 import traceback
 import pytz
+from suntime import Sun
+from app.weather.models import Weather, Day
+from app import db, scheduler
 
 
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
