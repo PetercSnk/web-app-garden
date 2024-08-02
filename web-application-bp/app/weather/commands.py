@@ -1,12 +1,13 @@
+"""Click commands used by flask application."""
+import click
 from app import db
 from app.weather.models import Day
-import click
 
 
 @click.command()
 @click.argument("day_id")
 def drop_day(day_id):
-    """Delete specific day entry by id."""
+    """Deletes specific day entries for a given id."""
     day = Day.query.filter_by(id=day_id).first()
     if day:
         db.session.delete(day)
@@ -17,7 +18,7 @@ def drop_day(day_id):
 
 @click.command()
 def drop_all_days():
-    """Delete all days."""
+    """Deletes all day entries in day table."""
     days = Day.query.all()
     for day in days:
         db.session.delete(day)
