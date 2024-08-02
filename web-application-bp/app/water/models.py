@@ -3,7 +3,7 @@ from app import db
 
 
 class System(db.Model):
-    """Connected systems and devices."""
+    """Model for system table."""
     __bind_key__ = "water"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
@@ -15,7 +15,7 @@ class System(db.Model):
 
 
 class Plant(db.Model):
-    """Information about plants."""
+    """Model for plant table."""
     __bind_key__ = "water"
     id = db.Column(db.Integer, primary_key=True)
     system_id = db.Column(db.Integer, db.ForeignKey("system.id"))
@@ -30,7 +30,7 @@ class Plant(db.Model):
 
 
 class History(db.Model):
-    """Watering history for plants."""
+    """Model for history table."""
     __bind_key__ = "water"
     id = db.Column(db.Integer, primary_key=True)
     plant_id = db.Column(db.Integer, db.ForeignKey("plant.id"))
@@ -42,7 +42,7 @@ class History(db.Model):
 
 
 class Config(db.Model):
-    """Automated watering configuration for plants."""
+    """Model for config table."""
     __bind_key__ = "water"
     id = db.Column(db.Integer, primary_key=True)
     plant_id = db.Column(db.Integer, db.ForeignKey("plant.id"))

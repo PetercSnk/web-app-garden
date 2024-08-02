@@ -5,7 +5,7 @@ from wtforms.validators import DataRequired, Length, NumberRange
 
 
 class PlantForm(FlaskForm):
-    """Retrieves details for new plant entries.
+    """Form to retrieve details for new plant entries.
 
     The select field for systems contains only classes that
     are specified within the systems.py file.
@@ -23,7 +23,7 @@ class PlantForm(FlaskForm):
 
 
 class WaterForm(FlaskForm):
-    """Retrieves an integer corresponding to a time in seconds.
+    """Form to retrieve an integer corresponding to a time in seconds.
 
     This is used for the manual watering of plants.
     """
@@ -36,7 +36,7 @@ class WaterForm(FlaskForm):
 
 
 class ConfigForm(FlaskForm):
-    """Changes the automated watering config for existing plants."""
+    """Form to retreive new configs for existing plants."""
     enabled = BooleanField("Enable Automatic Watering")
     duration_sec = IntegerField("Water Duration (Seconds)",
                                 validators=[DataRequired(),
