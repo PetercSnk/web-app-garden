@@ -1,12 +1,13 @@
+"""Core routes and scheduler callbacks."""
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED
 from flask import redirect, url_for
 from app import scheduler
 from app.core import core_bp
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED
 
 
 @core_bp.route("/", methods=["GET"])
 def core_index():
-    """Redirect to main access point."""
+    """Redirects to main access point."""
     return redirect(url_for("auth_bp.login"))
 
 

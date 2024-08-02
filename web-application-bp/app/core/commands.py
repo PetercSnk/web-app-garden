@@ -1,8 +1,9 @@
-from app import db
+"""Click commands used by flask application."""
 import click
+from app import db
 
 
 @click.command()
 def drop_db():
-    """Delete databases."""
+    """Deletes all databases."""
     db.drop_all()

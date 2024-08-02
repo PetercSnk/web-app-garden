@@ -1,3 +1,4 @@
+"""Configuration settings used by flask application."""
 import os
 
 basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
