@@ -1,8 +1,11 @@
-from app import create_app
+"""Executes application."""
 import logging
+from app import create_app
 
+# Creates configured flask application object.
 app = create_app()
 
+# Executes locally if run directly.
 if __name__ == "__main__":
     app.run(host="0.0.0.0")
 else:
