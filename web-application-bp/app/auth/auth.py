@@ -8,6 +8,7 @@ from app.auth import auth_bp
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    """Authenticates users if username and password exist in user table."""
     if current_user.is_authenticated:
         current_app.logger.debug(f"User '{current_user.username}' is already authenticated, redirecting")
         return redirect(url_for("weather_bp.index"))
@@ -31,6 +32,7 @@ def login():
 @auth_bp.route("/logout")
 @login_required
 def logout():
+    """Deauthenticates users."""
     current_app.logger.info(f"User '{current_user.username}' logging out")
     logout_user()
     flash("Logged Out", category="success")
