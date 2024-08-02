@@ -75,8 +75,12 @@ def auto_water(plant_id):
     """
     with scheduler.app.app_context():
         plant = Plant.query.filter(Plant.id == plant_id).first()
-        if not plant.config.rain_reset or not check_rain(plant.config):
+        # Checks plants statuses are false so the manual and automatic watering processes don't overlap.
+        # Also ensures the process only executes when rain reset is disabled or the threshold isn't met.
+        if not plant.status and (not plant.config.rain_reset or not check_rain(plant.config)):
             process(plant.config.duration_sec, plant.id)
+        else:
+            scheduler.app.logger.info("Rain reset and threshold met or attempt to execute job when already running")
         now = datetime.now().replace(microsecond=0)
         plant.config.job_init = now
         plant.config.job_due = get_due_date(plant.config)
