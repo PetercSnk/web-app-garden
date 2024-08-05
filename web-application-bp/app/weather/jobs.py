@@ -3,6 +3,9 @@ from datetime import datetime
 import requests
 import traceback
 import pytz
+import openmeteo_requests
+import pandas as pd
+import numpy as np
 from suntime import Sun
 from app.weather.models import Weather, Day
 from app import db, scheduler
@@ -10,19 +13,105 @@ from app import db, scheduler
 
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
 def get_weather():
-    ok, json = request_weather()
-    if ok:
-        organised_forecast = extract_data(json)
-        if organised_forecast:
-            dates_added = add_to_db(remove_missing(organised_forecast))
-            if dates_added:
-                return "Added: " + ", ".join(dates_added)
-            else:
-                return "No new data"
-        else:
-            return "Error"
-    else:
-        return "Error"
+    response = get_response()
+    daily, hourly = format_response(response)
+    insert_into_db(daily, hourly)
+
+
+def get_response():
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": scheduler.app.config["LATITUDE"],
+        "longitude": scheduler.app.config["LONGITUDE"],
+        "hourly": ["temperature_2m",
+                   "relative_humidity_2m",
+                   "precipitation_probability",
+                   "precipitation"],
+        "daily": "weather_code",
+        "timezone": scheduler.app.config["TIMEZONE"],
+        "past_days": 3
+    }
+    om = openmeteo_requests.Client()
+    responses = om.weather_api(url, params=params)
+    response = responses[0]
+    return response
+
+
+def format_response(response):
+    hourly = response.Hourly()
+    hourly_temperature = hourly.Variables(0).ValuesAsNumpy()
+    hourly_humidity = hourly.Variables(1).ValuesAsNumpy()
+    hourly_precipitation_probability = hourly.Variables(2).ValuesAsNumpy()
+    hourly_precipitation = hourly.Variables(3).ValuesAsNumpy()
+    hourly_data = {"date": pd.date_range(
+        start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
+        end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
+        freq=pd.Timedelta(seconds=hourly.Interval()),
+        inclusive="left"
+    )}
+    hourly_data["temperature"] = hourly_temperature
+    hourly_data["humidity"] = hourly_humidity
+    hourly_data["precipitation_probability"] = hourly_precipitation_probability
+    hourly_data["precipitation"] = hourly_precipitation
+    hourly_dataframe = pd.DataFrame(data=hourly_data)
+    daily = response.Daily()
+    daily_weather_code = daily.Variables(0).ValuesAsNumpy()
+    daily_data = {"date": pd.date_range(
+        start=pd.to_datetime(daily.Time(), unit="s", utc=True),
+        end=pd.to_datetime(daily.TimeEnd(), unit="s", utc=True),
+        freq=pd.Timedelta(seconds=daily.Interval()),
+        inclusive="left"
+    )}
+    vfunc = np.vectorize(weather_code_to_description)
+    daily_data["description"] = vfunc(daily_weather_code)
+    daily_dataframe = pd.DataFrame(data=daily_data)
+    return daily_dataframe, hourly_dataframe
+
+
+def weather_code_to_description(code):
+    try:
+        description = wmo_codes[code]
+    except KeyError:
+        scheduler.app.logger.debug(f"Weather code '{code}' is unknown")
+        description = "Unknown"
+    return description
+
+
+def insert_into_db(daily_dataframe, hourly_dataframe):
+    """TODO"""
+    pass
+
+
+wmo_codes = {
+    0: "Clear Sky",
+    1: "Mainly Clear",
+    2: "Partly Cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Freezing Fog",
+    51: "Light Drizzle",
+    53: "Moderate Drizzle",
+    55: "Dense Drizzle",
+    56: "Light Freezing Drizzle",
+    57: "Dense Freezing Drizzle",
+    61: "Slight Rain",
+    63: "Moderate Rain",
+    65: "Heavy Rain",
+    66: "Light Freezing Rain",
+    67: "Heavy Freezing Rain",
+    71: "Slight Snow Fall",
+    73: "Moderate Snow Fall",
+    75: "Heavy Snow Fall",
+    77: "Snow Grains",
+    80: "Slight Rain Showers",
+    81: "Moderate Rain Showers",
+    82: "Violent Rain Showers",
+    85: "Slight Snow Showers",
+    86: "Heavy Snow Showers",
+    95: "Slight or Moderate Thunderstorm",
+    96: "Thunderstorm with Slight Hail",
+    99: "Thunderstorm with Heavy Hail"
+}
 
 
 def kelvin_to_celsius(kelvin):
