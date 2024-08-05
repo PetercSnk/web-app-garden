@@ -29,8 +29,9 @@ def graph(day_id):
     if request.method == "POST":
         if "get-weather" in request.form:
             current_app.logger.debug("Getting weather")
-            msg = jobs.get_weather()
-            flash(msg, category="info")
+            #msg = jobs.get_weather()
+            jobs.get_weather()
+            #flash(msg, category="info")
             return redirect(url_for("weather_bp.index"))
     elif request.method == "GET":
         days = Day.query.order_by(Day.date).all()
