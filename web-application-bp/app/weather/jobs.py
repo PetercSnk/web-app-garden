@@ -14,8 +14,11 @@ from app import db, scheduler
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
 def get_weather():
     response = get_response()
-    daily, hourly = format_response(response)
-    insert_into_db(daily, hourly)
+    daily_dataframe, hourly_dataframe = format_response(response)
+    daily_dataframe = add_sun(daily_dataframe)
+    #insert_into_db(daily_dataframe, hourly_dataframe)
+    print(daily_dataframe)
+    print(hourly_dataframe)
 
 
 def get_response():
@@ -43,27 +46,34 @@ def format_response(response):
     hourly_humidity = hourly.Variables(1).ValuesAsNumpy()
     hourly_precipitation_probability = hourly.Variables(2).ValuesAsNumpy()
     hourly_precipitation = hourly.Variables(3).ValuesAsNumpy()
-    hourly_data = {"date": pd.date_range(
+    hourly_datetime_dataframe = pd.DataFrame({"datetime": pd.date_range(
         start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
         end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
         freq=pd.Timedelta(seconds=hourly.Interval()),
         inclusive="left"
-    )}
-    hourly_data["temperature"] = hourly_temperature
-    hourly_data["humidity"] = hourly_humidity
-    hourly_data["precipitation_probability"] = hourly_precipitation_probability
-    hourly_data["precipitation"] = hourly_precipitation
+    )})
+    hourly_data = {
+        "date": pd.to_datetime(hourly_datetime_dataframe["datetime"]).dt.date,
+        "time": pd.to_datetime(hourly_datetime_dataframe["datetime"]).dt.time,
+        "temperature": hourly_temperature,
+        "humidity": hourly_humidity,
+        "precipitation_probability": hourly_precipitation_probability,
+        "precipitation": hourly_precipitation
+    }
     hourly_dataframe = pd.DataFrame(data=hourly_data)
     daily = response.Daily()
     daily_weather_code = daily.Variables(0).ValuesAsNumpy()
-    daily_data = {"date": pd.date_range(
+    daily_datetime_dataframe = pd.DataFrame({"datetime": pd.date_range(
         start=pd.to_datetime(daily.Time(), unit="s", utc=True),
         end=pd.to_datetime(daily.TimeEnd(), unit="s", utc=True),
         freq=pd.Timedelta(seconds=daily.Interval()),
         inclusive="left"
-    )}
+    )})
     vfunc = np.vectorize(weather_code_to_description)
-    daily_data["description"] = vfunc(daily_weather_code)
+    daily_data = {
+        "date": pd.to_datetime(daily_datetime_dataframe["datetime"]).dt.date,
+        "description": vfunc(daily_weather_code)
+    }
     daily_dataframe = pd.DataFrame(data=daily_data)
     return daily_dataframe, hourly_dataframe
 
@@ -77,8 +87,28 @@ def weather_code_to_description(code):
     return description
 
 
+def get_sunrise(sun, tz, date, min_time):
+    dt = datetime.combine(date, min_time)
+    sunrise = sun.get_sunrise_time(dt, tz).time()
+    return sunrise
+
+
+def get_sunset(sun, tz, date, min_time):
+    dt = datetime.combine(date, min_time)
+    sunset = sun.get_sunset_time(dt, tz).time()
+    return sunset
+
+
+def add_sun(daily_dataframe):
+    min_time = datetime.min.time()
+    tz = pytz.timezone(scheduler.app.config["TIMEZONE"])
+    sun = Sun(scheduler.app.config["LATITUDE"], scheduler.app.config["LONGITUDE"])
+    dates = daily_dataframe["date"].to_list()
+    
+
 def insert_into_db(daily_dataframe, hourly_dataframe):
     """TODO"""
+    
     pass
 
 
