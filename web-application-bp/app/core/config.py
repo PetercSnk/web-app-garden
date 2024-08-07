@@ -15,6 +15,8 @@ class Config(object):
     SCHEDULER_API_ENABLED = True
     BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?"
     API_KEY = "KEY"
-    LATITUDE = 51.529
-    LONGITUDE = -3.191
+    CITY = "Cardiff"
+    REGION = "Wales"
+    LATITUDE = 51.48
+    LONGITUDE = -3.18
     TIMEZONE = "Europe/London"
