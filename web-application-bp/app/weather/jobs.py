@@ -5,8 +5,9 @@ import traceback
 import pytz
 import openmeteo_requests
 import pandas as pd
-import numpy as np
 from suntime import Sun
+from astral import LocationInfo
+from astral.sun import sun
 from app.weather.models import Weather, Day
 from app import db, scheduler
 
@@ -69,10 +70,9 @@ def format_response(response):
         freq=pd.Timedelta(seconds=daily.Interval()),
         inclusive="left"
     )})
-    vfunc = np.vectorize(weather_code_to_description)
     daily_data = {
         "date": pd.to_datetime(daily_datetime_dataframe["datetime"]).dt.date,
-        "description": vfunc(daily_weather_code)
+        "description": map(weather_code_to_description, daily_weather_code)
     }
     daily_dataframe = pd.DataFrame(data=daily_data)
     return daily_dataframe, hourly_dataframe
@@ -87,24 +87,28 @@ def weather_code_to_description(code):
     return description
 
 
-def get_sunrise(sun, tz, date, min_time):
-    dt = datetime.combine(date, min_time)
-    sunrise = sun.get_sunrise_time(dt, tz).time()
-    return sunrise
-
-
-def get_sunset(sun, tz, date, min_time):
-    dt = datetime.combine(date, min_time)
-    sunset = sun.get_sunset_time(dt, tz).time()
-    return sunset
+def get_suntimes(city, tz, dates):
+    daily_sunrise, daily_sunset = [], []
+    for date in dates:
+        s = sun(city.observer, date=date, tzinfo=tz)
+        daily_sunrise.append(s["sunrise"].time().replace(microsecond=0))
+        daily_sunset.append(s["sunset"].time().replace(microsecond=0))
+    return daily_sunrise, daily_sunset
 
 
 def add_sun(daily_dataframe):
-    min_time = datetime.min.time()
+    city = LocationInfo(scheduler.app.config["CITY"],
+                        scheduler.app.config["REGION"],
+                        scheduler.app.config["TIMEZONE"],
+                        scheduler.app.config["LATITUDE"],
+                        scheduler.app.config["LONGITUDE"])
     tz = pytz.timezone(scheduler.app.config["TIMEZONE"])
-    sun = Sun(scheduler.app.config["LATITUDE"], scheduler.app.config["LONGITUDE"])
     dates = daily_dataframe["date"].to_list()
-    
+    daily_sunrise, daily_sunset = get_suntimes(city, tz, dates)
+    daily_dataframe["sunrise"] = daily_sunrise
+    daily_dataframe["sunset"] = daily_sunset
+    return daily_dataframe
+
 
 def insert_into_db(daily_dataframe, hourly_dataframe):
     """TODO"""
@@ -112,6 +116,7 @@ def insert_into_db(daily_dataframe, hourly_dataframe):
     pass
 
 
+# move this to json file or something
 wmo_codes = {
     0: "Clear Sky",
     1: "Mainly Clear",
