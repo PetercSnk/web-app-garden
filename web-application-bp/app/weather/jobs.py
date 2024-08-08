@@ -17,9 +17,9 @@ def get_weather():
     response = get_response()
     daily_dataframe, hourly_dataframe = format_response(response)
     daily_dataframe = add_sun(daily_dataframe)
-    #insert_into_db(daily_dataframe, hourly_dataframe)
-    print(daily_dataframe)
-    print(hourly_dataframe)
+    insert_into_db(daily_dataframe, hourly_dataframe)
+    # print(daily_dataframe)
+    # print(hourly_dataframe)
 
 
 def get_response():
@@ -88,6 +88,8 @@ def weather_code_to_description(code):
 
 
 def get_suntimes(city, tz, dates):
+    # possible to switch this back to take single date and use df.apply()
+    # daily_df["sunrise"], daily_df["sunset"] = daily_df.apply(get_suntimes, axis=1)?
     daily_sunrise, daily_sunset = [], []
     for date in dates:
         s = sun(city.observer, date=date, tzinfo=tz)
@@ -112,7 +114,7 @@ def add_sun(daily_dataframe):
 
 def insert_into_db(daily_dataframe, hourly_dataframe):
     """TODO"""
-    
+    dates = daily_dataframe["date"].to_list()
     pass
 
 
