@@ -36,7 +36,7 @@ def create_app():
     # Initialises and creates all databases.
     db.init_app(app)
     from app.auth.models import User
-    from app.weather.models import Day, Weather
+    from app.weather.models import Daily, Hourly
     from app.water.models import System, Plant, History, Config
     with app.app_context():
         db.create_all()

@@ -1,23 +1,24 @@
 from app import db
 
 
-class Day(db.Model):
+class Daily(db.Model):
     __bind_key__ = "weather"
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date)
     sunrise = db.Column(db.Time)
     sunset = db.Column(db.Time)
-    description = db.Column(db.String(64))
-    weather = db.relationship("Weather", backref="day", cascade="all, delete-orphan")
+    weather_code = db.Column(db.Integer)
+    weather_description = db.Column(db.String(64))
+    hourly = db.relationship("Hourly", backref="day", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Day: {self.date}>"
 
 
-class Weather(db.Model):
+class Hourly(db.Model):
     __bind_key__ = "weather"
     id = db.Column(db.Integer, primary_key=True)
-    day_id = db.Column(db.Integer, db.ForeignKey("day.id"))
+    daily_id = db.Column(db.Integer, db.ForeignKey("daily.id"))
     time = db.Column(db.Time)
     temperature = db.Column(db.Integer)
     humidity = db.Column(db.Integer)
