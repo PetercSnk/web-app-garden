@@ -1,14 +1,17 @@
 """All functions required for scheduling the retrieval of weather data."""
 from datetime import datetime
+import os
+import yaml
 import requests
 import traceback
 import pytz
 import openmeteo_requests
 import pandas as pd
+import numpy as np
 from suntime import Sun
 from astral import LocationInfo
 from astral.sun import sun
-from app.weather.models import Weather, Day
+from app.weather.models import Daily, Hourly
 from app import db, scheduler
 
 
@@ -16,10 +19,11 @@ from app import db, scheduler
 def get_weather():
     response = get_response()
     daily_dataframe, hourly_dataframe = format_response(response)
-    daily_dataframe = add_sun(daily_dataframe)
+    daily_dataframe = insert_descriptions(daily_dataframe)
+    daily_dataframe = insert_suntimes(daily_dataframe)
     insert_into_db(daily_dataframe, hourly_dataframe)
-    # print(daily_dataframe)
-    # print(hourly_dataframe)
+    print(daily_dataframe)
+    print(hourly_dataframe)
 
 
 def get_response():
@@ -72,83 +76,53 @@ def format_response(response):
     )})
     daily_data = {
         "date": pd.to_datetime(daily_datetime_dataframe["datetime"]).dt.date,
-        "description": map(weather_code_to_description, daily_weather_code)
+        "weather_code": daily_weather_code
     }
     daily_dataframe = pd.DataFrame(data=daily_data)
     return daily_dataframe, hourly_dataframe
 
 
-def weather_code_to_description(code):
+def get_description(wmo_codes, code):
     try:
-        description = wmo_codes[code]
+        description = wmo_codes["codes"][code]
     except KeyError:
         scheduler.app.logger.debug(f"Weather code '{code}' is unknown")
         description = "Unknown"
     return description
 
 
-def get_suntimes(city, tz, dates):
-    # possible to switch this back to take single date and use df.apply()
-    # daily_df["sunrise"], daily_df["sunset"] = daily_df.apply(get_suntimes, axis=1)?
-    daily_sunrise, daily_sunset = [], []
-    for date in dates:
-        s = sun(city.observer, date=date, tzinfo=tz)
-        daily_sunrise.append(s["sunrise"].time().replace(microsecond=0))
-        daily_sunset.append(s["sunset"].time().replace(microsecond=0))
-    return daily_sunrise, daily_sunset
+def insert_descriptions(daily_dataframe):
+    vfunc = np.vectorize(get_description)
+    base_path = os.path.abspath(os.path.dirname(__file__))
+    file_path = os.path.join(base_path, "wmo_codes.yaml")
+    with open(file_path, "r") as file:
+        data = yaml.safe_load(file)
+    daily_dataframe["weather_description"] = vfunc(data, daily_dataframe["weather_code"])
+    return daily_dataframe
 
 
-def add_sun(daily_dataframe):
+def get_suntimes(city, tz, date):
+    s = sun(city.observer, tzinfo=tz, date=date)
+    sunrise = s["sunrise"].time().replace(microsecond=0)
+    sunset = s["sunset"].time().replace(microsecond=0)
+    return sunrise, sunset
+
+
+def insert_suntimes(daily_dataframe):
     city = LocationInfo(scheduler.app.config["CITY"],
                         scheduler.app.config["REGION"],
                         scheduler.app.config["TIMEZONE"],
                         scheduler.app.config["LATITUDE"],
                         scheduler.app.config["LONGITUDE"])
     tz = pytz.timezone(scheduler.app.config["TIMEZONE"])
-    dates = daily_dataframe["date"].to_list()
-    daily_sunrise, daily_sunset = get_suntimes(city, tz, dates)
-    daily_dataframe["sunrise"] = daily_sunrise
-    daily_dataframe["sunset"] = daily_sunset
+    vfunc = np.vectorize(get_suntimes)
+    daily_dataframe["sunrise"], daily_dataframe["sunset"] = vfunc(city, tz, daily_dataframe["date"])
     return daily_dataframe
 
 
 def insert_into_db(daily_dataframe, hourly_dataframe):
     """TODO"""
-    dates = daily_dataframe["date"].to_list()
     pass
-
-
-# move this to json file or something
-wmo_codes = {
-    0: "Clear Sky",
-    1: "Mainly Clear",
-    2: "Partly Cloudy",
-    3: "Overcast",
-    45: "Fog",
-    48: "Freezing Fog",
-    51: "Light Drizzle",
-    53: "Moderate Drizzle",
-    55: "Dense Drizzle",
-    56: "Light Freezing Drizzle",
-    57: "Dense Freezing Drizzle",
-    61: "Slight Rain",
-    63: "Moderate Rain",
-    65: "Heavy Rain",
-    66: "Light Freezing Rain",
-    67: "Heavy Freezing Rain",
-    71: "Slight Snow Fall",
-    73: "Moderate Snow Fall",
-    75: "Heavy Snow Fall",
-    77: "Snow Grains",
-    80: "Slight Rain Showers",
-    81: "Moderate Rain Showers",
-    82: "Violent Rain Showers",
-    85: "Slight Snow Showers",
-    86: "Heavy Snow Showers",
-    95: "Slight or Moderate Thunderstorm",
-    96: "Thunderstorm with Slight Hail",
-    99: "Thunderstorm with Heavy Hail"
-}
 
 
 def kelvin_to_celsius(kelvin):
