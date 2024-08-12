@@ -24,7 +24,7 @@ def index():
 
 
 @weather_bp.route("/<int:day_id>", methods=["GET", "POST"])
-#@login_required
+@login_required
 def graph(day_id):
     if request.method == "POST":
         if "get-weather" in request.form:
@@ -34,13 +34,13 @@ def graph(day_id):
             #flash(msg, category="info")
             return redirect(url_for("weather_bp.index"))
     elif request.method == "GET":
-        days = Daily.query.order_by(Daily.date).all()
-        if day_id in [day.id for day in days]:
-            date, sunrise, sunset, labels, temperature_c, humidity, rain_probability, rain_volume_mm = format(day_id)
-            return render_template("weather/weather.html", render=True, user=current_user, days=days, date=date, sunrise=sunrise, sunset=sunset, labels=labels, temperature_c=temperature_c, humidity=humidity, rain_probability=rain_probability, rain_volume_mm=rain_volume_mm)
-        else:
-            flash("No Data", category="info")
-            return render_template("weather/weather.html", render=False, user=current_user)
+        # days = Daily.query.order_by(Daily.date).all()
+        # if day_id in [day.id for day in days]:
+        #     date, sunrise, sunset, labels, temperature_c, humidity, rain_probability, rain_volume_mm = format(day_id)
+        #     return render_template("weather/weather.html", render=True, user=current_user, days=days, date=date, sunrise=sunrise, sunset=sunset, labels=labels, temperature_c=temperature_c, humidity=humidity, rain_probability=rain_probability, rain_volume_mm=rain_volume_mm)
+        # else:
+        #     flash("No Data", category="info")
+        return render_template("weather/weather.html", render=False, user=current_user)
 
 
 def format(day_id):
