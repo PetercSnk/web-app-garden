@@ -21,10 +21,8 @@ def get_weather():
     daily_dataframe, hourly_dataframe = format_response(response)
     daily_dataframe = insert_descriptions(daily_dataframe)
     daily_dataframe = insert_suntimes(daily_dataframe)
-    insert_into_db(daily_dataframe, hourly_dataframe)
-    # print(daily_dataframe)
-    # print(hourly_dataframe)
-
+    daily_count, hourly_count = insert_into_db(daily_dataframe, hourly_dataframe)
+    return daily_count, hourly_count
 
 def get_response():
     url = "https://api.open-meteo.com/v1/forecast"
@@ -47,10 +45,10 @@ def get_response():
 
 def format_response(response):
     hourly = response.Hourly()
-    hourly_temperature = hourly.Variables(0).ValuesAsNumpy()
-    hourly_humidity = hourly.Variables(1).ValuesAsNumpy()
-    hourly_precipitation_probability = hourly.Variables(2).ValuesAsNumpy()
-    hourly_precipitation = hourly.Variables(3).ValuesAsNumpy()
+    hourly_temperature = np.round(hourly.Variables(0).ValuesAsNumpy().astype("float64"), 2)
+    hourly_humidity = hourly.Variables(1).ValuesAsNumpy().astype(int)
+    hourly_precipitation_probability = hourly.Variables(2).ValuesAsNumpy().astype(int)
+    hourly_precipitation = np.round(hourly.Variables(3).ValuesAsNumpy().astype("float64"), 2)
     hourly_datetime_dataframe = pd.DataFrame({"datetime": pd.date_range(
         start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
         end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
@@ -67,7 +65,7 @@ def format_response(response):
     }
     hourly_dataframe = pd.DataFrame(data=hourly_data)
     daily = response.Daily()
-    daily_weather_code = daily.Variables(0).ValuesAsNumpy()
+    daily_weather_code = daily.Variables(0).ValuesAsNumpy().astype(int)
     daily_datetime_dataframe = pd.DataFrame({"datetime": pd.date_range(
         start=pd.to_datetime(daily.Time(), unit="s", utc=True),
         end=pd.to_datetime(daily.TimeEnd(), unit="s", utc=True),
@@ -109,7 +107,6 @@ def get_suntimes(city, tz, date):
 
 
 def insert_suntimes(daily_dataframe):
-    """can use apply here?? and on insert"""
     city = LocationInfo(scheduler.app.config["CITY"],
                         scheduler.app.config["REGION"],
                         scheduler.app.config["TIMEZONE"],
@@ -134,15 +131,31 @@ def add_daily_to_db(row, existing_dates):
             return row["date"]
 
 
+def add_hourly_to_db(row, daily_id):
+    with scheduler.app.app_context():
+        hourly = Hourly(daily_id=daily_id,
+                        time=row["time"],
+                        temperature=row["temperature"],
+                        humidity=row["humidity"],
+                        precipitation_probability=row["precipitation_probability"],
+                        precipitation=row["precipitation"])
+        db.session.add(hourly)
+        db.session.commit()
+        return row["time"]
+
+
 def insert_into_db(daily_dataframe, hourly_dataframe):
-    existing_dates = [day.date for day in Daily.query.all()]
-    dates_added = daily_dataframe.apply(add_daily_to_db, existing_dates=existing_dates, axis=1)
-    print(dates_added)
-    # for index, row in daily_dataframe.iterrows():
-    #     print(row)
-    #     h = hourly_dataframe.loc[hourly_dataframe["date"] == row["date"]]
-    #     print(h)
-    pass
+    existing_dates = [row.date for row in Daily.query.all()]
+    daily_result = daily_dataframe.apply(add_daily_to_db, existing_dates=existing_dates, axis=1)
+    dates_added = daily_result.dropna().tolist()
+    daily_count = len(dates_added)
+    hourly_count = 0
+    for date in dates_added:
+        daily_id = Daily.query.filter(Daily.date == date).first().id
+        hourly_series = hourly_dataframe.loc[hourly_dataframe["date"] == date]
+        hourly_result = hourly_series.apply(add_hourly_to_db, daily_id=daily_id, axis=1)
+        hourly_count += hourly_result.size
+    return daily_count, hourly_count
 
 
 # def kelvin_to_celsius(kelvin):
