@@ -11,22 +11,20 @@
         </form>
     </div>
     {% if render %}
-        <h4>Date: {{ format_date(date) }} Sunrise: {{ sunrise }} Sunset: {{ sunset }}</h4>
-        <h4>Weather: {{ description }}</h4>
         <div class="get-day-btns">
-            {% for daily in daily_all %}
-                <a class="nav-item" href="/weather/{{ daily.id }}">{{ format_date(daily.date) }}</a>
+            {% for record in available %}
+                <a class="nav-item" href="/weather/{{ record.id }}">{{ format_date(record.date) }}</a>
             {% endfor %}
         </div>
         <figure class="highcharts-figure">
             <div id="container"></div>
         </figure>
         <script>
-            var time = {{ time | safe }}
-            var temperature = {{ temperature | safe }}
-            var humidity = {{ humidity | safe }}
-            var precipitation_probability = {{ precipitation_probability | safe }}
-            var precipitation = {{ precipitation | safe }}
+            var time = {{ hourly_data["time"] | safe }}
+            var temperature = {{ hourly_data["temperature"] | safe }}
+            var humidity = {{ hourly_data["humidity"] | safe }}
+            var precipitation_probability = {{ hourly_data["precipitation_probability"] | safe }}
+            var precipitation = {{ hourly_data["precipitation"] | safe }}
             Highcharts.chart("container", {
                 chart: {
                     zooming: {
@@ -34,7 +32,12 @@
                     }
                 },
                 title: {
-                    text: "Weather for {{ format_date(date) }}",
+                    text: "{{ daily_data.weather_description }}",
+                    align: "left"
+                },
+                subtitle: {
+                    text: `{{ city }}, {{ region }}<br>Date: {{ format_date(daily_data.date) }}, 
+                    Sunrise: {{ daily_data.sunrise }}, Sunset: {{ daily_data.sunset }}`,
                     align: "left"
                 },
                 xAxis: [{
