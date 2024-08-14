@@ -90,12 +90,8 @@ def auto_water(plant_id):
 
 
 def check_rain(config):
-    """Returns true if rainfall meets the threshold specified within the config.
-
-    TODO:
-        Move url to config, redo weather with this api as its far more suitable.
-    """
-    url = "https://api.open-meteo.com/v1/forecast"
+    """Returns true if rainfall meets the threshold specified within the config."""
+    url = scheduler.app.config["URL"]
     params = {
         "latitude": scheduler.app.config["LATITUDE"],
         "longitude": scheduler.app.config["LONGITUDE"],
