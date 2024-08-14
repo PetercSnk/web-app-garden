@@ -1,7 +1,9 @@
+"""All tables used by the weather module."""
 from app import db
 
 
 class Daily(db.Model):
+    """Model for daily table."""
     __bind_key__ = "weather"
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date)
@@ -16,6 +18,7 @@ class Daily(db.Model):
 
 
 class Hourly(db.Model):
+    """Model for hourly table."""
     __bind_key__ = "weather"
     id = db.Column(db.Integer, primary_key=True)
     daily_id = db.Column(db.Integer, db.ForeignKey("daily.id"))
