@@ -13,8 +13,7 @@ class Config(object):
         "water": "sqlite:///" + os.path.join(basedir, "water", "instance", "water.db")
     }
     SCHEDULER_API_ENABLED = True
-    BASE_URL = "http://api.openweathermap.org/data/2.5/forecast?"
-    API_KEY = "KEY"
+    URL = "https://api.open-meteo.com/v1/forecast"
     CITY = "Cardiff"
     REGION = "Wales"
     LATITUDE = 51.48
