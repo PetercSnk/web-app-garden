@@ -29,7 +29,7 @@ def graph(daily_id):
         if "get-weather" in request.form:
             current_app.logger.debug("Getting weather")
             daily_count, hourly_count = jobs.get_weather()
-            msg = f"Added {daily_count} daily entries and {hourly_count} hourly entries."
+            msg = f"Added {daily_count} & {hourly_count} new records"
             flash(msg, category="info")
             return redirect(url_for("weather_bp.index"))
     elif request.method == "GET":
