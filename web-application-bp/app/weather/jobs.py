@@ -1,4 +1,4 @@
-"""All functions required for scheduling the retrieval of weather data."""
+"""All functions required for retrieving weather data."""
 import os
 import yaml
 import pytz
@@ -13,6 +13,8 @@ from app import db, scheduler
 
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
 def get_weather():
+    """Function used by the scheduler for automatic retrieval of weather data."""
+    delete_old_records()
     response = get_response()
     daily_dataframe, hourly_dataframe = format_response(response)
     daily_dataframe = insert_descriptions(daily_dataframe)
@@ -23,7 +25,8 @@ def get_weather():
 
 
 def get_response():
-    url = "https://api.open-meteo.com/v1/forecast"
+    """Makes request to url specified in the applications config and returns response."""
+    url = scheduler.app.config["URL"]
     params = {
         "latitude": scheduler.app.config["LATITUDE"],
         "longitude": scheduler.app.config["LONGITUDE"],
@@ -42,6 +45,7 @@ def get_response():
 
 
 def format_response(response):
+    """Formats response into a daily and hourly dataframe."""
     hourly = response.Hourly()
     hourly_temperature = np.round(hourly.Variables(0).ValuesAsNumpy().astype("float64"), 2)
     hourly_humidity = hourly.Variables(1).ValuesAsNumpy().astype(int)
@@ -79,6 +83,11 @@ def format_response(response):
 
 
 def delete_anomalies(daily_dataframe, hourly_dataframe):
+    """Deletes rows for a date when its hourly data does not contain 24 data points.
+
+    Responses from Open-Meteo sometimes contain one date that only has 1 hourly data
+    point. This is not useful and is subsequently removed.
+    """
     dates = daily_dataframe["date"].tolist()
     for date in dates:
         hourly_series = hourly_dataframe.loc[hourly_dataframe["date"] == date]
@@ -89,6 +98,7 @@ def delete_anomalies(daily_dataframe, hourly_dataframe):
 
 
 def get_description(wmo_codes, code):
+    """Converts wmo codes to their corresponding string description."""
     try:
         description = wmo_codes["codes"][code]
     except KeyError:
@@ -98,6 +108,7 @@ def get_description(wmo_codes, code):
 
 
 def insert_descriptions(daily_dataframe):
+    """Inserts descriptions for wmo codes into daily dataframes."""
     vfunc = np.vectorize(get_description)
     base_path = os.path.abspath(os.path.dirname(__file__))
     file_path = os.path.join(base_path, "wmo_codes.yaml")
@@ -108,6 +119,7 @@ def insert_descriptions(daily_dataframe):
 
 
 def get_suntimes(city, tz, date):
+    """Retrieves the sunrise and sunset for a given date."""
     s = sun(city.observer, tzinfo=tz, date=date)
     sunrise = s["sunrise"].time().replace(microsecond=0)
     sunset = s["sunset"].time().replace(microsecond=0)
@@ -115,6 +127,7 @@ def get_suntimes(city, tz, date):
 
 
 def insert_suntimes(daily_dataframe):
+    """Inserts sunrise and sunset times into daily dataframes."""
     city = LocationInfo(scheduler.app.config["CITY"],
                         scheduler.app.config["REGION"],
                         scheduler.app.config["TIMEZONE"],
@@ -127,6 +140,7 @@ def insert_suntimes(daily_dataframe):
 
 
 def add_daily_to_db(row, existing_dates):
+    """Adds rows from daily dataframe to daily table."""
     with scheduler.app.app_context():
         if row["date"] not in existing_dates:
             daily = Daily(date=row["date"],
@@ -140,6 +154,7 @@ def add_daily_to_db(row, existing_dates):
 
 
 def add_hourly_to_db(row, daily_id):
+    """Adds rows from hourly dataframe to hourly table."""
     with scheduler.app.app_context():
         hourly = Hourly(daily_id=daily_id,
                         time=row["time"],
@@ -153,6 +168,7 @@ def add_hourly_to_db(row, daily_id):
 
 
 def insert_into_db(daily_dataframe, hourly_dataframe):
+    """Applies add to db functions on the appropriate dataframes/series."""
     existing_dates = [row.date for row in Daily.query.all()]
     daily_result = daily_dataframe.apply(add_daily_to_db, existing_dates=existing_dates, axis=1)
     dates_added = daily_result.dropna().tolist()
@@ -166,17 +182,16 @@ def insert_into_db(daily_dataframe, hourly_dataframe):
     return daily_count, hourly_count
 
 
-# @scheduler.task("cron", id="delete_old_records", minute="30", hour="1", day="*", month="*", day_of_week="*")
-# def delete_old_records():
-#     with scheduler.app.app_context():
-#         days = Day.query.order_by(Day.date).all()
-#         # keeps data for only 7 days
-#         delete = days[:-7]
-#         delete_log = []
-#         if delete:
-#             for day in delete:
-#                 delete_log.append(day.date.strftime("%d/%m/%y"))
-#                 db.session.delete(day)
-#             db.session.commit()
-#     scheduler.app.logger.debug(f"Deleted {delete_log} from database")
-#     return
+def delete_old_records():
+    """Deletes records older than 10 days in daily and hourly table."""
+    with scheduler.app.app_context():
+        daily_all = Daily.query.order_by(Daily.date).all()
+        delete = daily_all[:-10]
+        delete_log = []
+        if delete:
+            for record in delete:
+                delete_log.append(record.date.strftime("%d/%m/%y"))
+                db.session.delete(record)
+            db.session.commit()
+    scheduler.app.logger.debug(f"Deleted {delete_log} from database")
+    return
