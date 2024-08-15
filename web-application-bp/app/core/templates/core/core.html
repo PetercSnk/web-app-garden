@@ -10,11 +10,11 @@
     <body>
         <nav class="navbar">
             {% if user.is_authenticated %}
-                <a class="nav-item" id="weather" href="{{ url_for('weather_bp.index') }}">Weather Forecast</a>
-                <a class="nav-item" id="water" href="{{ url_for('water_bp.water_check') }}">Water</a>
-                <a class="nav-item" id="configure" href="{{ url_for('water_bp.configure_check') }}">Configure</a>
-                <a class="nav-item" id="setup" href="{{ url_for('water_bp.setup') }}">Setup</a>
-                <a class="nav-item" id="logout" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
+                <a id="weather" href="{{ url_for('weather_bp.index') }}">Weather Forecast</a>
+                <a id="water" href="{{ url_for('water_bp.water_check') }}">Water</a>
+                <a id="configure" href="{{ url_for('water_bp.configure_check') }}">Configure</a>
+                <a id="setup" href="{{ url_for('water_bp.setup') }}">Setup</a>
+                <a id="logout" href="{{ url_for('auth_bp.logout') }}">Log Out</a>
             {% endif %}
         </nav>
         <div class="messages">
