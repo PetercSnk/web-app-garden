@@ -1,11 +1,11 @@
 {% extends "core/core.html" %}
 {% block head %}
     <title>Login</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('auth_bp.static', filename='stylesheet.css') }}"/>
 {% endblock %}
 {% block content %}
     <h1>Login</h1>
-    <h4>Enter your login details</h4>
-    <form action="" method="post">
+    <form action="" method="post" class="login-form">
         {{ login_form.hidden_tag() }}
         <p>
             {{ login_form.username.label }}
