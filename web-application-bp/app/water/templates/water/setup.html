@@ -1,24 +1,32 @@
 {% extends "core/core.html" %}
 {% block head %}
     <title>Setup</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('water_bp.static', filename='stylesheet.css') }}"/>
 {% endblock %}
 {% block content %}
     <h1>Setup</h1>
-    <form action="" method="post">
-        <dl>
-            {{ plant_form.hidden_tag() }}
-            {{ plant_form.name.label }}
-            {{ plant_form.name }}
-            {{ plant_form.description.label }}
-            {{ plant_form.description }}
-            {{ plant_form.system.label }}
-            {{ plant_form.system }}
-            {{ plant_form.submit() }}
-        </dl>
-    </form>
-    <h2>Available Plants</h2>
-    {% for plant in plants_available %}
-        <p>{{ plant.name }}, {{ plant.description }}, {{ plant.system.name }}
-        <a href="{{ url_for('water_bp.delete', plant_id=plant.id) }}">Delete</a></p>
-    {% endfor %}
+    <div class="water-container">
+        <div class="water-content">
+            <form action="" method="post">
+                <dl>
+                    {{ plant_form.hidden_tag() }}
+                    {{ plant_form.name.label }}
+                    {{ plant_form.name }}
+                    <br>
+                    {{ plant_form.description.label }}
+                    {{ plant_form.description }}
+                    <br>
+                    {{ plant_form.system.label }}
+                    {{ plant_form.system }}
+                    <br>
+                    {{ plant_form.submit() }}
+                </dl>
+            </form>
+            <h2>Available Plants</h2>
+            {% for plant in plants_available %}
+                <p>{{ plant.name }}, {{ plant.description }}, {{ plant.system.name }}
+                <a href="{{ url_for('water_bp.delete', plant_id=plant.id) }}">Delete</a></p>
+            {% endfor %}
+        </div>
+    </div>
 {% endblock %}

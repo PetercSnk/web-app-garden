@@ -1,21 +1,29 @@
 {% extends "core/core.html" %}
 {% block head %}
     <title>Water</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('water_bp.static', filename='stylesheet.css') }}"/>
 {% endblock %}
 {% block content %}
     <h1>Water</h1>
-    {% for plant in plants_available %}
-        <a class="nav-item" href="{{ url_for('water_bp.water', plant_id=plant.id) }}">{{ plant.name }}</a>
-    {% endfor %}
-    <h2>Selected Plant: {{ plant_selected.name }}</h2>
-    <form action="" method="post">
-        <dl>
-            {{ water_form.hidden_tag() }}
-            {{ water_form.duration_sec.label }}
-            {{ water_form.duration_sec }}
-            {{ water_form.submit() }}
-        </dl>
-    </form>
-    <a href ="{{ url_for('water_bp.cancel', plant_id=plant_selected.id) }}">Cancel</a> 
-    <h4>Water Running Status: {{ plant_selected.status }}</h4>
+    <div class="sub-links">
+        {% for plant in plants_available %}
+            <a href="{{ url_for('water_bp.water', plant_id=plant.id) }}">{{ plant.name }}</a>
+        {% endfor %}
+    </div>
+    <div class="water-container">
+        <div class="water-content">
+            <h2>Selected Plant: {{ plant_selected.name }}</h2>
+            <form action="" method="post">
+                <dl>
+                    {{ water_form.hidden_tag() }}
+                    {{ water_form.duration_sec.label }}
+                    {{ water_form.duration_sec }}
+                    <br>
+                    {{ water_form.submit() }}
+                </dl>
+            </form>
+            <a href ="{{ url_for('water_bp.cancel', plant_id=plant_selected.id) }}">Cancel</a> 
+            <h4>Water Running Status: {{ plant_selected.status }}</h4>
+        </div>
+    </div>
 {% endblock %}

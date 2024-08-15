@@ -1,45 +1,52 @@
 {% extends "core/core.html" %}
 {% block head %}
     <title>Configure</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('water_bp.static', filename='stylesheet.css') }}"/>
 {% endblock %}
 {% block content %}
     <h1>Configure</h1>
-    {% for plant in plants_available %}
-        <a class="nav-item" href="{{ url_for('water_bp.configure', plant_id=plant.id) }}">{{ plant.name }}</a>
-    {% endfor %}
-    <h2>Selected Plant: {{ plant_selected.name }}</h2>
-    <h3>Last Edit: {{ format_date(plant_selected.config.last_edit) }}</h3>
-    {% if active_job %}
-        <h3>Active Job: {{ active_job.name }}</h3>
-        <h3>Scheduled Date: {{ format_date(active_job.next_run_time) }}</h3>
-    {% else %}
-        <h3>Disabled</h3>
-    {% endif %}
-    <form action="" method="post">
-        <dl>
-            {{ config_form.hidden_tag() }} 
-            {{ config_form.enabled.label }}
-            {{ config_form.enabled }}
-            <br>
-            {{ config_form.duration_sec.label }}
-            {{ config_form.duration_sec }}
-            <br>
-            {{ config_form.occurrence_days.label }}
-            {{ config_form.occurrence_days }}
-            <br>
-            {{ config_form.mode.label }}
-            {{ config_form.mode }}
-            <br>
-            {{ config_form.default.label }}
-            {{ config_form.default }}
-            <br>
-            {{ config_form.rain_reset.label }}
-            {{ config_form.rain_reset }}
-            <br>
-            {{ config_form.threshold_mm.label }}
-            {{ config_form.threshold_mm }}
-            <br>
-            {{ config_form.submit() }}
-        </dl>
-    </form>
+    <div class="sub-links">
+        {% for plant in plants_available %}
+            <a href="{{ url_for('water_bp.configure', plant_id=plant.id) }}">{{ plant.name }}</a>
+        {% endfor %}
+    </div>
+    <div class="water-container">
+        <div class="water-content">
+            <h2>Selected Plant: {{ plant_selected.name }}</h2>
+            <h3>Last Edit: {{ format_date(plant_selected.config.last_edit) }}</h3>
+            {% if active_job %}
+                <h3>Active Job: {{ active_job.name }}</h3>
+                <h3>Scheduled Date: {{ format_date(active_job.next_run_time) }}</h3>
+            {% else %}
+                <h3>Disabled</h3>
+            {% endif %}
+            <form action="" method="post">
+                <dl>
+                    {{ config_form.hidden_tag() }} 
+                    {{ config_form.enabled.label }}
+                    {{ config_form.enabled }}
+                    <br>
+                    {{ config_form.duration_sec.label }}
+                    {{ config_form.duration_sec }}
+                    <br>
+                    {{ config_form.occurrence_days.label }}
+                    {{ config_form.occurrence_days }}
+                    <br>
+                    {{ config_form.mode.label }}
+                    {{ config_form.mode }}
+                    <br>
+                    {{ config_form.default.label }}
+                    {{ config_form.default }}
+                    <br>
+                    {{ config_form.rain_reset.label }}
+                    {{ config_form.rain_reset }}
+                    <br>
+                    {{ config_form.threshold_mm.label }}
+                    {{ config_form.threshold_mm }}
+                    <br>
+                    {{ config_form.submit() }}
+                </dl>
+            </form>
+        </div>
+    </div>
 {% endblock %}
