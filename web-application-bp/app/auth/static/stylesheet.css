@@ -1,16 +1,13 @@
-body {
-    color: white;
-    font-family: monospace, serif;
-    letter-spacing: 0.05em;
-}
-
 .login-form {
-    width: 300px;
-    padding: 64px 15px 24px;
+    width: auto;
     margin: 0 auto;
+    text-align: center;
+    padding-top: 5px;
 }
 
 h1 {
-    width: 300px;
+    width: auto;
     margin: 0 auto;
+    text-align: center;
+    background-color: black;
 }

@@ -1,0 +1,34 @@
+h1 {
+    width: auto;
+    margin: 0 auto;
+    text-align: center;
+    background-color: blue;
+}
+
+.water-container {
+    width: auto;
+    margin: auto 0;
+    background-color: pink;
+    display: flex;
+    justify-content: center;
+}
+
+.water-content {
+    width: 500px;
+    background-color: black;
+}
+
+.sub-links {
+    width: auto;
+    margin: 0 auto;
+    text-align: center;
+    background-color: brown;
+}
+
+input, select {
+    width: 99%;
+}
+
+input:focus, select:focus {
+    background-color: #5CE860;
+}

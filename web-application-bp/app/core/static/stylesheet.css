@@ -1,19 +1,32 @@
 .navbar {
-    background-color:white;
-    height: 25px;
+    height: 20px;
     width: auto;
-    padding: 10px;
+    background-color: red;
 }
 
-.nav-item {
+h1, h2, h3, h4, dl, a, p, .alert {
+    color: white;
+    font-family: monospace;
+}
+
+a {
     text-decoration: none;
-    margin-right: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+a:link, a:visited {
+    color: white;
+}
+
+a:hover, a:active {
+    color: #5CE860;
 }
 
 .messages {
-    background-color: blue;
     height: 25px;
     width: auto;
+    background-color: green;
 }
 
 html {
@@ -21,6 +34,8 @@ html {
 }
 
 .alert {
+    padding-left: 15px;
+    padding-right: 15px;
     height: 25px;
     text-align: left;
     opacity: 0.95;
