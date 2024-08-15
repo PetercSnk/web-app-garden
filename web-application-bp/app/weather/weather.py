@@ -24,18 +24,20 @@ def index():
             return redirect(url_for("weather_bp.graph", daily_id=0))
 
 
-@weather_bp.route("/<int:daily_id>", methods=["GET", "POST"])
+@weather_bp.route("/request-weather", methods=["GET"])
+@login_required
+def request_weather():
+    daily_count, hourly_count = jobs.get_weather()
+    msg = f"Added {daily_count} / {hourly_count} new records"
+    flash(msg, category="info")
+    return redirect(url_for("weather_bp.index"))
+
+
+@weather_bp.route("/<int:daily_id>", methods=["GET"])
 @login_required
 def graph(daily_id):
     """Handles daily weather charts and requests for weather data."""
-    if request.method == "POST":
-        if "get-weather" in request.form:
-            current_app.logger.debug("Getting weather")
-            daily_count, hourly_count = jobs.get_weather()
-            msg = f"Added {daily_count} & {hourly_count} new records"
-            flash(msg, category="info")
-            return redirect(url_for("weather_bp.index"))
-    elif request.method == "GET":
+    if request.method == "GET":
         available = Daily.query.order_by(Daily.date).all()
         if daily_id in [record.id for record in available]:
             daily_data = Daily.query.filter(Daily.id == daily_id).first()
@@ -49,8 +51,10 @@ def graph(daily_id):
                                    daily_data=daily_data,
                                    hourly_data=hourly_data)
         else:
-            flash("No Data", category="info")
-        return render_template("weather/weather.html", render=False, user=current_user)
+            return render_template("weather/weather.html",
+                                   render=False,
+                                   user=current_user,
+                                   available=available)
 
 
 def get_formatted_hourly(daily_id):

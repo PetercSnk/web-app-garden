@@ -6,17 +6,16 @@
 {% endblock %}
 {% block content %}
     <h1>Weather Forecast</h1>
-    <div class="get-weather-btn">
-        <form method="post">
-            <button type="submit" class="normal-btn" name="get-weather">Get Weather</button>
-        </form>
+    <div class="sub-links">
+        <a href="/weather/request-weather">Request Weather</a>
+    </div>
+    <div class="sub-links">
+        {% for record in available %}
+            <a href="/weather/{{ record.id }}">{{ format_date(record.date) }}</a>
+        {% endfor %}
     </div>
     {% if render %}
-        <div class="get-day-btns">
-            {% for record in available %}
-                <a class="nav-item" href="/weather/{{ record.id }}">{{ format_date(record.date) }}</a>
-            {% endfor %}
-        </div>
+    <div class="c">
         <figure class="highcharts-figure">
             <div id="container"></div>
         </figure>
@@ -162,5 +161,6 @@
                 }]
             });  
         </script>
+    </div>
     {% endif %}
 {% endblock %}
