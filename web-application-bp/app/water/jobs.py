@@ -3,16 +3,10 @@ import time
 from datetime import timedelta, datetime
 import pytz
 import openmeteo_requests
-from suntime import Sun
+from astral import LocationInfo
+from astral.sun import sun
 from app.water.models import Plant, History
 from app import db, scheduler, events
-
-
-def get_sun_tz():
-    """Creates and returns a sun and timezone object based on the flask config."""
-    sun = Sun(scheduler.app.config["LATITUDE"], scheduler.app.config["LONGITUDE"])
-    tz = pytz.timezone(scheduler.app.config["TIMEZONE"])
-    return sun, tz
 
 
 def get_due_date(config):
@@ -29,13 +23,18 @@ def get_due_date(config):
         A datetime object.
     """
     due = datetime.now().replace(microsecond=0) + timedelta(days=config.occurrence_days)
+    city = LocationInfo(scheduler.app.config["CITY"],
+                        scheduler.app.config["REGION"],
+                        scheduler.app.config["TIMEZONE"],
+                        scheduler.app.config["LATITUDE"],
+                        scheduler.app.config["LONGITUDE"])
+    tz = pytz.timezone(scheduler.app.config["TIMEZONE"])
+    s = sun(city.observer, tzinfo=tz, date=due)
     if config.mode == 1:
-        sun, tz = get_sun_tz()
-        sunset = sun.get_sunset_time(due, tz).time()
+        sunset = s["sunset"].time()
         due = due.replace(hour=sunset.hour, minute=sunset.minute, second=sunset.second)
     elif config.mode == 2:
-        sun, tz = get_sun_tz()
-        sunrise = sun.get_sunrise_time(due, tz).time()
+        sunrise = s["sunrise"].time()
         due = due.replace(hour=sunrise.hour, minute=sunrise.minute, second=sunrise.second)
     else:
         default = config.default
