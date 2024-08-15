@@ -25,7 +25,7 @@ def get_weather():
 
 
 def get_response():
-    """Makes request to url specified in the applications config and returns response."""
+    """Makes requests to the url specified in the applications config and returns response."""
     url = scheduler.app.config["URL"]
     params = {
         "latitude": scheduler.app.config["LATITUDE"],
@@ -45,7 +45,7 @@ def get_response():
 
 
 def format_response(response):
-    """Formats response into a daily and hourly dataframe."""
+    """Formats responses and returns daily and hourly dataframes."""
     hourly = response.Hourly()
     hourly_temperature = np.round(hourly.Variables(0).ValuesAsNumpy().astype("float64"), 2)
     hourly_humidity = hourly.Variables(1).ValuesAsNumpy().astype(int)
@@ -83,7 +83,7 @@ def format_response(response):
 
 
 def delete_anomalies(daily_dataframe, hourly_dataframe):
-    """Deletes rows for a date when its hourly data does not contain 24 data points.
+    """Deletes all records for a date when its hourly data does not contain 24 data points.
 
     Responses from Open-Meteo sometimes contain one date that only has 1 hourly data
     point. This is not useful and is subsequently removed.
@@ -119,7 +119,7 @@ def insert_descriptions(daily_dataframe):
 
 
 def get_suntimes(city, tz, date):
-    """Retrieves the sunrise and sunset for a given date."""
+    """Retrieves sunrise and sunset times for the given date."""
     s = sun(city.observer, tzinfo=tz, date=date)
     sunrise = s["sunrise"].time().replace(microsecond=0)
     sunset = s["sunset"].time().replace(microsecond=0)
@@ -140,7 +140,7 @@ def insert_suntimes(daily_dataframe):
 
 
 def add_daily_to_db(row, existing_dates):
-    """Adds rows from daily dataframe to daily table."""
+    """Adds rows from daily dataframes to the daily table."""
     with scheduler.app.app_context():
         if row["date"] not in existing_dates:
             daily = Daily(date=row["date"],
@@ -154,7 +154,7 @@ def add_daily_to_db(row, existing_dates):
 
 
 def add_hourly_to_db(row, daily_id):
-    """Adds rows from hourly dataframe to hourly table."""
+    """Adds rows from hourly dataframes to the hourly table."""
     with scheduler.app.app_context():
         hourly = Hourly(daily_id=daily_id,
                         time=row["time"],
@@ -168,7 +168,7 @@ def add_hourly_to_db(row, daily_id):
 
 
 def insert_into_db(daily_dataframe, hourly_dataframe):
-    """Applies add to db functions on the appropriate dataframes/series."""
+    """Applies add to db functions to the daily and hourly dataframes/series."""
     existing_dates = [row.date for row in Daily.query.all()]
     daily_result = daily_dataframe.apply(add_daily_to_db, existing_dates=existing_dates, axis=1)
     dates_added = daily_result.dropna().tolist()
