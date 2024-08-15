@@ -1,6 +1,7 @@
 {% extends "core/core.html" %}
 {% block head %}
     <title>Home</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('weather_bp.static', filename='stylesheet.css') }}"/>
     <script src="https://code.highcharts.com/highcharts.js"></script>
 {% endblock %}
 {% block content %}
@@ -29,20 +30,37 @@
                 chart: {
                     zooming: {
                         type: "xy"
+                    },
+                    backgroundColor: "#212121",
+                    borderColor: "rgba(255,255,255,0.25)",
+                    borderWidth: 2,
+                    style: {
+                        fontFamily: "monospace",
                     }
                 },
                 title: {
                     text: "{{ daily_data.weather_description }}",
-                    align: "left"
+                    align: "left",
+                    style: {
+                        color: "#ffffff"
+                    }
                 },
                 subtitle: {
                     text: `{{ city }}, {{ region }}<br>Date: {{ format_date(daily_data.date) }}, 
                     Sunrise: {{ daily_data.sunrise }}, Sunset: {{ daily_data.sunset }}`,
-                    align: "left"
+                    align: "left",
+                    style: {
+                        color: "#ffffff"
+                    }
                 },
                 xAxis: [{
                     categories: time,
-                    crosshair: true
+                    crosshair: true,
+                    labels: {
+                        style: {
+                            color: "#ffffff"
+                        }
+                    }
                 }],
                 yAxis: [{
                     labels: {
@@ -105,9 +123,10 @@
                 legend: {
                     align: "left",
                     verticalAlign: "top",
-                    backgroundColor:
-                        Highcharts.defaultOptions.legend.backgroundColor ||
-                        "rgba(255,255,255,0.25)"
+                    backgroundColor: "rgba(255,255,255,0.25)",
+                    itemStyle: {
+                        color: "#ffffff"
+                    }
                 },
                 series: [{
                     name: "Temperature",
