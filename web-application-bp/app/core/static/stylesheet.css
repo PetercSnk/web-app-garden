@@ -9,18 +9,28 @@ h1, h2, h3, h4, dl, a, p, .alert {
     font-family: monospace;
 }
 
+h1 {
+    width: auto;
+    margin: 0 auto;
+    text-align: center;
+    background-color: blue;
+}
+
 a {
     text-decoration: none;
     padding-left: 15px;
     padding-right: 15px;
 }
 
-a:link, a:visited {
-    color: white;
+a:hover, a:active {
+    color: lightgreen;
 }
 
-a:hover, a:active {
-    color: #5CE860;
+.sub-links {
+    width: auto;
+    margin: 0 auto;
+    text-align: center;
+    background-color: brown;
 }
 
 .messages {

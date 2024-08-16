@@ -1,13 +1,6 @@
-h1 {
-    width: auto;
-    margin: 0 auto;
-    text-align: center;
-    background-color: blue;
-}
-
 .water-container {
     width: auto;
-    margin: auto 0;
+    margin: 0 auto;
     background-color: pink;
     display: flex;
     justify-content: center;
@@ -18,17 +11,27 @@ h1 {
     background-color: black;
 }
 
-.sub-links {
-    width: auto;
-    margin: 0 auto;
-    text-align: center;
-    background-color: brown;
+input[type=text], input[type=number], input[type=time], input[type=submit], select {
+    width: 100%;
+    box-sizing: border-box;
 }
 
-input, select {
-    width: 99%;
+input[type=submit] {
+    margin-top: 20px;
+    color: red;
+}
+
+dd, dt {
+    margin: 0 auto;
+    padding: 5px;
 }
 
 input:focus, select:focus {
-    background-color: #5CE860;
+    background-color: lightgreen;
+}
+
+h2, h3 {
+    width: auto;
+    margin: 5px auto;
+    text-align: center;
 }

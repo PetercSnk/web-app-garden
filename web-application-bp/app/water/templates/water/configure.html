@@ -21,30 +21,23 @@
                 <h3>Disabled</h3>
             {% endif %}
             <form action="" method="post">
+                {{ config_form.hidden_tag() }} 
                 <dl>
-                    {{ config_form.hidden_tag() }} 
-                    {{ config_form.enabled.label }}
-                    {{ config_form.enabled }}
-                    <br>
-                    {{ config_form.duration_sec.label }}
-                    {{ config_form.duration_sec }}
-                    <br>
-                    {{ config_form.occurrence_days.label }}
-                    {{ config_form.occurrence_days }}
-                    <br>
-                    {{ config_form.mode.label }}
-                    {{ config_form.mode }}
-                    <br>
-                    {{ config_form.default.label }}
-                    {{ config_form.default }}
-                    <br>
-                    {{ config_form.rain_reset.label }}
-                    {{ config_form.rain_reset }}
-                    <br>
-                    {{ config_form.threshold_mm.label }}
-                    {{ config_form.threshold_mm }}
-                    <br>
-                    {{ config_form.submit() }}
+                    <dt>{{ config_form.enabled.label }}</dt>
+                    <dd>{{ config_form.enabled }}</dd>
+                    <dt>{{ config_form.duration_sec.label }}</dt>
+                    <dd>{{ config_form.duration_sec }}</dd>
+                    <dt>{{ config_form.occurrence_days.label }}</dt>
+                    <dd>{{ config_form.occurrence_days }}</dd>
+                    <dt>{{ config_form.mode.label }}</dt>
+                    <dd>{{ config_form.mode }}</dd>
+                    <dt>{{ config_form.default.label }}</dt>
+                    <dd>{{ config_form.default }}</dd>
+                    <dt>{{ config_form.rain_reset.label }}</dt>
+                    <dd>{{ config_form.rain_reset }}</dd>
+                    <dt>{{ config_form.threshold_mm.label }}</dt>
+                    <dd>{{ config_form.threshold_mm }}</dd>
+                    <dt>{{ config_form.submit() }}</dt>
                 </dl>
             </form>
         </div>

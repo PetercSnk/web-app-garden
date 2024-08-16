@@ -7,26 +7,26 @@
     <h1>Setup</h1>
     <div class="water-container">
         <div class="water-content">
+            <h2>Available Plants</h2>
+            <dl>
+            {% for plant in plants_available %}
+                <dt>{{ plant.name }}, {{ plant.description }}, {{ plant.system.name }}
+                <a href="{{ url_for('water_bp.delete', plant_id=plant.id) }}">Delete</a></dt>
+            {% endfor %}
+            </dl>
             <form action="" method="post">
+                {{ plant_form.hidden_tag() }}
                 <dl>
-                    {{ plant_form.hidden_tag() }}
-                    {{ plant_form.name.label }}
-                    {{ plant_form.name }}
-                    <br>
-                    {{ plant_form.description.label }}
-                    {{ plant_form.description }}
-                    <br>
-                    {{ plant_form.system.label }}
-                    {{ plant_form.system }}
-                    <br>
-                    {{ plant_form.submit() }}
+                    <dt>{{ plant_form.name.label }}</dt>
+                    <dd>{{ plant_form.name }}</dd>
+                    <dt>{{ plant_form.description.label }}</dt>
+                    <dd>{{ plant_form.description }}</dd>
+                    <dt>{{ plant_form.system.label }}</dt>
+                    <dd>{{ plant_form.system }}</dd>
+                    <dt>{{ plant_form.submit() }}</dt>
                 </dl>
             </form>
-            <h2>Available Plants</h2>
-            {% for plant in plants_available %}
-                <p>{{ plant.name }}, {{ plant.description }}, {{ plant.system.name }}
-                <a href="{{ url_for('water_bp.delete', plant_id=plant.id) }}">Delete</a></p>
-            {% endfor %}
+
         </div>
     </div>
 {% endblock %}

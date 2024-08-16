@@ -41,7 +41,7 @@
                     text: "{{ daily_data.weather_description }}",
                     align: "left",
                     style: {
-                        color: "#ffffff"
+                        color: "white"
                     }
                 },
                 subtitle: {
@@ -49,7 +49,7 @@
                     Sunrise: {{ daily_data.sunrise }}, Sunset: {{ daily_data.sunset }}`,
                     align: "left",
                     style: {
-                        color: "#ffffff"
+                        color: "white"
                     }
                 },
                 xAxis: [{
@@ -57,7 +57,7 @@
                     crosshair: true,
                     labels: {
                         style: {
-                            color: "#ffffff"
+                            color: "white"
                         }
                     }
                 }],
@@ -124,7 +124,10 @@
                     verticalAlign: "top",
                     backgroundColor: "rgba(255,255,255,0.25)",
                     itemStyle: {
-                        color: "#ffffff"
+                        color: "white"
+                    },
+                    itemHoverStyle: {
+                        color: "lightgreen"
                     }
                 },
                 series: [{
