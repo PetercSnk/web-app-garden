@@ -14,13 +14,13 @@ from app import db, scheduler
 @scheduler.task("cron", id="get_weather", minute="0", hour="1", day="*", month="*", day_of_week="*")
 def get_weather():
     """Function used by the scheduler for automatic retrieval of weather data."""
-    delete_old_records()
     response = get_response()
     daily_dataframe, hourly_dataframe = format_response(response)
     daily_dataframe = insert_descriptions(daily_dataframe)
     daily_dataframe = insert_suntimes(daily_dataframe)
     daily_dataframe, hourly_dataframe = delete_anomalies(daily_dataframe, hourly_dataframe)
     daily_count, hourly_count = insert_into_db(daily_dataframe, hourly_dataframe)
+    delete_old_records()
     return daily_count, hourly_count
 
 
