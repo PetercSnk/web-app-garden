@@ -80,8 +80,7 @@ def auto_water(plant_id):
             process(plant.config.duration_sec, plant.id)
         else:
             scheduler.app.logger.info("Rain reset and threshold met or attempt to execute job when already running")
-        now = datetime.now().replace(microsecond=0)
-        plant.config.job_init = now
+        plant.config.job_init = datetime.now().replace(microsecond=0)
         plant.config.job_due = get_due_date(plant.config)
         schedule_job(plant)
         db.session.commit()
