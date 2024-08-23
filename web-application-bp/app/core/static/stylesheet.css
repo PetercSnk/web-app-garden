@@ -1,42 +1,23 @@
 .navbar {
     height: 20px;
     width: auto;
-    background-color: red;
 }
 
-h1, h2, h3, h4, dl, a, p, .alert {
+.nav-item {
     color: white;
     font-family: monospace;
-}
-
-h1 {
-    width: auto;
-    margin: 0 auto;
-    text-align: center;
-    background-color: blue;
-}
-
-a {
     text-decoration: none;
     padding-left: 15px;
     padding-right: 15px;
 }
 
-a:hover, a:active {
+.nav-item:hover, .nav-item:active {
     color: lightgreen;
-}
-
-.sub-links {
-    width: auto;
-    margin: 0 auto;
-    text-align: center;
-    background-color: brown;
 }
 
 .messages {
     height: 25px;
     width: auto;
-    background-color: green;
 }
 
 html {
@@ -44,6 +25,8 @@ html {
 }
 
 .alert {
+    color: white;
+    font-family: monospace;
     padding-left: 15px;
     padding-right: 15px;
     height: 25px;

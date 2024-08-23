@@ -1,6 +1,41 @@
-.login-form {
+.login-container {
     width: auto;
     margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
+
+.login-content {
+    width: 500px;
+}
+
+input[type=text], input[type=password], input[type=submit] {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+input[type=submit] {
+    margin-top: 20px;
+}
+
+input:focus {
+    background-color: lightgreen;
+}
+
+dd, dt {
+    margin: 0 auto;
+    padding: 5px;
+}
+
+dl {
+    color: white;
+    font-family: monospace;
+}
+
+h1 {
+    color: white;
+    font-family: monospace;
+    width: auto;
+    margin: 5px auto;
     text-align: center;
-    padding-top: 5px;
 }

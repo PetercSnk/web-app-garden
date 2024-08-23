@@ -7,13 +7,6 @@
     <h1>Setup</h1>
     <div class="water-container">
         <div class="water-content">
-            <h2>Available Plants</h2>
-            <dl>
-            {% for plant in plants_available %}
-                <dt>{{ plant.name }}, {{ plant.description }}, {{ plant.system.name }}
-                <a href="{{ url_for('water_bp.delete', plant_id=plant.id) }}">Delete</a></dt>
-            {% endfor %}
-            </dl>
             <form action="" method="post">
                 {{ plant_form.hidden_tag() }}
                 <dl>
@@ -26,7 +19,18 @@
                     <dt>{{ plant_form.submit() }}</dt>
                 </dl>
             </form>
-
+            <h2>Available Plants</h2>
+            {% for plant in plants_available %}
+                <dl>
+                    <dt>Name: {{ plant.name }}</dt>
+                    <dd>Description: {{ plant.description }}</dd>
+                    <dd>System: {{ plant.system.name }}</dd>
+                    <dd>
+                        <a class="delete-btn" href="{{ url_for('water_bp.delete', plant_id=plant.id) }}">Delete</a>
+                    </dd>
+                </dl>
+                <hr>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}

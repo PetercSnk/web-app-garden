@@ -1,14 +1,12 @@
 .water-container {
     width: auto;
     margin: 0 auto;
-    background-color: pink;
     display: flex;
     justify-content: center;
 }
 
 .water-content {
     width: 500px;
-    background-color: black;
 }
 
 input[type=text], input[type=number], input[type=time], input[type=submit], select {
@@ -17,8 +15,11 @@ input[type=text], input[type=number], input[type=time], input[type=submit], sele
 }
 
 input[type=submit] {
-    margin-top: 20px;
-    color: red;
+    margin-top: 25px;
+}
+
+input:focus, select:focus {
+    background-color: lightgreen;
 }
 
 dd, dt {
@@ -26,12 +27,38 @@ dd, dt {
     padding: 5px;
 }
 
-input:focus, select:focus {
-    background-color: lightgreen;
+dl {
+    color: white;
+    font-family: monospace;
+    margin: 0 auto;
 }
 
-h2, h3 {
+h1, h2, h3 {
+    color: white;
+    font-family: monospace;
     width: auto;
     margin: 5px auto;
+    text-align: center;
+}
+
+a {
+    color: white;
+    font-family: monospace;
+    text-decoration: none;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+a:hover, a:active {
+    color: lightgreen;
+}
+
+.delete-btn {
+    padding: 0;
+}
+
+.sub-links {
+    width: auto;
+    margin: 0 auto;
     text-align: center;
 }

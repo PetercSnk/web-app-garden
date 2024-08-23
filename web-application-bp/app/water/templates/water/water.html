@@ -13,7 +13,7 @@
     <div class="water-container">
         <div class="water-content">
             <h2>Selected Plant: {{ plant_selected.name }}</h2>
-            <h3>Water Running Status: {{ plant_selected.status }}</h4>
+            <h3>Running Status: {{ plant_selected.status }}</h4>
             <form action="" method="post">
                 {{ water_form.hidden_tag() }}
                 <dl>
@@ -22,13 +22,13 @@
                     <dt>{{ water_form.submit() }}</dt>
                 </dl>
             </form>
-            <dl>
-                <dt>
-                    <form action="{{ url_for('water_bp.cancel', plant_id=plant_selected.id) }}">
+            <form action="{{ url_for('water_bp.cancel', plant_id=plant_selected.id) }}">
+                <dl>
+                    <dt>
                         <input type="submit" value="Cancel">
-                    </form>
-                </dt>
-            </dl>
+                    </dt>
+                </dl>
+            </form>
         </div>
     </div>
 {% endblock %}

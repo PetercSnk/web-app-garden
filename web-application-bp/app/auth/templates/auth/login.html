@@ -5,24 +5,24 @@
 {% endblock %}
 {% block content %}
     <h1>Login</h1>
-    <form action="" method="post" class="login-form">
-        {{ login_form.hidden_tag() }}
-        <p>
-            {{ login_form.username.label }}
-            {{ login_form.username(size=16) }}
-            {% for error in login_form.username.errors %}
-                <span class="form-error">{{ error }}</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ login_form.password.label }}
-            {{ login_form.password(size=16) }}
-            {% for error in login_form.password.errors %}
-                <span class="form-error">{{ error }}</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ login_form.submit() }}
-        </p>
-    </form>
+    <div class="login-container">
+        <div class="login-content">
+            <form action="" method="post"> 
+                {{ login_form.hidden_tag() }}
+                <dl>
+                    <dt>{{ login_form.username.label }}</dt>
+                    <dd>{{ login_form.username(size=16) }}</dd>
+                    {% for error in login_form.username.errors %}
+                        <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    <dt>{{ login_form.password.label }}</dt>
+                    <dd>{{ login_form.password(size=16) }}</dd>
+                    {% for error in login_form.password.errors %}
+                        <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    <dt>{{ login_form.submit() }}</dt>
+                </dl>
+            </form>
+        </div>
+    </div>
 {% endblock %}
