@@ -18,7 +18,7 @@ def login():
             username = login_form.username.data
             password = login_form.password.data
             user = User.query.filter_by(username=username).first()
-            if user is not None and check_password_hash(user.password, password):
+            if user and check_password_hash(user.password, password):
                 login_user(user, remember=True)
                 flash("Logged In", category="success")
                 current_app.logger.info(f"User '{username}' successfully logged in")
