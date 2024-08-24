@@ -56,6 +56,7 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix="/auth")
     from app.auth import commands as auth_cmds
     app.cli.add_command(auth_cmds.create_user)
+    app.cli.add_command(auth_cmds.drop_user)
     login_manager.login_view = "auth_bp.login"
     login_manager.login_message = "Please login"
     login_manager.login_message_category = "info"
