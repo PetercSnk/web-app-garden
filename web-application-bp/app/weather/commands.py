@@ -7,13 +7,13 @@ from app.weather.models import Daily
 @click.command()
 @click.argument("day_id")
 def drop_day(day_id):
-    """Deletes specific day entries for a given id."""
+    """Deletes daily entries for a given id."""
     day = Daily.query.filter_by(id=day_id).first()
     if day:
         db.session.delete(day)
         db.session.commit()
     else:
-        print(f"Daily with id '{day_id}' does not exist")
+        print("Error")
 
 
 @click.command()
