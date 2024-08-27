@@ -6,10 +6,8 @@ WORKDIR /web-application
 
 COPY web-application/* /web-application
 
-RUN pip install --upgrade pip
-
 RUN pip install -r requirements.txt
 
-EXPOSE 5000
+EXPOSE 8080
 
-CMD ["gunicorn", "app:app"]
+CMD ["gunicorn", "--config", "gunicorn_config.py" "app:app"]
