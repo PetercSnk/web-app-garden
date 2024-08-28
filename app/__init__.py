@@ -1,6 +1,7 @@
 """Flask application factory."""
+import logging
 import os
-import logging.config
+from logging.config import dictConfig
 import yaml
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -22,16 +23,18 @@ def create_app():
     path = os.path.join(basedir, "core", "logging.yaml")
     with open(path, "rt") as f:
         logging_config = yaml.safe_load(f.read())
-    logging.config.dictConfig(logging_config)
+    dictConfig(logging_config)
 
     # Creates the flask application object and loads config.
     app = Flask(__name__)
     from app.core.config import Config
     app.config.from_object(Config)
 
-    # Sets the applications logger.
-    if app.debug:
-        app.logger = logging.getLogger("development")
+    # is this ideal????
+    # if app.debug:
+    #     app.logger = logging.getLogger("development")
+    # else:
+    #     app.logger = logging.getLogger("production")
 
     # Initialises and creates all databases.
     db.init_app(app)

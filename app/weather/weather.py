@@ -9,6 +9,10 @@ from app.weather import weather_bp, jobs
 @weather_bp.route("/", methods=["GET"])
 @login_required
 def index():
+    #TEST REMOVE
+    current_app.logger.debug(current_app.logger.handlers)
+    current_app.logger.debug(current_app.logger)
+    #
     """Checks what daily records exist and redirects accordingly.
 
     Will redirect to either todays date, the first available record, or nothing.
