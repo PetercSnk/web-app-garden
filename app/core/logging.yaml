@@ -1,41 +1,48 @@
 version: 1
 
 formatters:
-    verbose:
-        format: "VERBOSE [%(asctime)s] %(levelname)s | %(name)s %(threadName)s >>> %(message)s"
-        datefmt: "%d-%m %H:%M:%S"
+    werkzeug.format:
+        format: "%(message)s"
     simple:
-        format: "SIMPLE [%(asctime)s] %(levelname)s | %(name)s %(message)s"
+        format: "[%(asctime)s] %(levelname)s %(name)s - %(message)s"
         datefmt: "%d-%m %H:%M:%S"
-
+    verbose:
+        format: "[%(asctime)s] %(levelname)s %(name)s %(filename)s %(lineno)d - %(message)s"
+        datefmt: "%d-%m %H:%M:%S"
+      
 handlers:
-    wsgi:
+    werkzeug.console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: werkzeug.format
+        stream: ext://sys.stderr
+    development.console:
         class: logging.StreamHandler
         level: DEBUG
-        formatter: verbose
-        stream: ext://flask.logging.wsgi_errors_stream
-    stderr:
-        class: logging.StreamHandler
-        level: INFO
         formatter: simple
         stream: ext://sys.stderr
-    file:
+    production.console:
+        class: logging.StreamHandler
+        level: WARNING
+        formatter: verbose
+        stream: ext://sys.stderr
+    production.file:
         class: logging.FileHandler
-        level: INFO
-        formatter: simple
+        level: WARNING
+        formatter: verbose
         filename: app.log
         mode: a
 
 loggers:
+    werkzeug:
+        level: INFO
+        handlers: [werkzeug.console]
+        propagate: False    
     development:
         level: DEBUG
-        handlers: [wsgi]
+        handlers: [development.console]
         propagate: False
     production:
-        level: DEBUG
-        handlers: [stderr, file]
+        level: WARNING
+        handlers: [production.console, production.file]
         propagate: True
-
-root:
-    level: DEBUG
-    handlers: [wsgi]

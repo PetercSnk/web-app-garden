@@ -1,5 +1,4 @@
 """Flask application factory."""
-import logging
 import os
 from logging.config import dictConfig
 import yaml
@@ -29,12 +28,6 @@ def create_app():
     app = Flask(__name__)
     from app.core.config import Config
     app.config.from_object(Config)
-
-    # is this ideal????
-    # if app.debug:
-    #     app.logger = logging.getLogger("development")
-    # else:
-    #     app.logger = logging.getLogger("production")
 
     # Initialises and creates all databases.
     db.init_app(app)
