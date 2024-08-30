@@ -60,5 +60,6 @@ a:hover, a:active {
 .sub-links {
     width: auto;
     margin: 0 auto;
+    padding: 5px;
     text-align: center;
 }
