@@ -30,7 +30,7 @@ handlers:
         class: logging.FileHandler
         level: WARNING
         formatter: verbose
-        filename: app.log
+        filename: logs/app.log
         mode: a
 
 loggers:
