@@ -2,15 +2,17 @@
 
 FROM python:3.11.9-slim
 
-WORKDIR /automated-garden/
+WORKDIR /automated-garden
 
-COPY app /app
+COPY app ./app
 COPY application.py .
 COPY wsgi.py .
 COPY requirements.txt .
 COPY gunicorn_config.py .
 
-RUN mkdir logs
+RUN mkdir ./logs
+VOLUME ./logs
+
 RUN pip3 install -r requirements.txt
 
 EXPOSE 8000
