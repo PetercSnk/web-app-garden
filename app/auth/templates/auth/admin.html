@@ -1,0 +1,28 @@
+{% extends "core/core.html" %}
+{% block head %}
+    <title>Admin</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('auth_bp.static', filename='stylesheet.css') }}"/>
+{% endblock %}
+{% block content %}
+    <h1>Admin</h1>
+    <div class="admin-container">
+        <div class="admin-content">
+            <form action="" method="post">
+                {{ admin_for.hidden_tag() }}
+                <dl>
+                    <dt>{{ admin_for.username.label }}</dt>
+                    <dd>{{ admin_for.username(size=16) }}</dd>
+                    {% for error in admin_for.username.errors %}
+                        <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    <dt>{{ admin_for.password.label }}</dt>
+                    <dd>{{ admin_for.password(size=16) }}</dd>
+                    {% for error in admin_for.password.errors %}
+                        <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                    <dt>{{ admin_for.submit() }}</dt>
+                </dl>
+
+            </form>
+        </div>
+    </div>
