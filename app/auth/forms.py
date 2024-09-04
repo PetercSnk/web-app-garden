@@ -12,7 +12,7 @@ class LoginForm(FlaskForm):
 
 
 class AdminForm(FlaskForm):
-    """Form to update users details."""
-    username = StringField("Username")
-    password = PasswordField("Password")
+    """Form to retrieve users new username and password."""
+    username = StringField("Username", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Update")

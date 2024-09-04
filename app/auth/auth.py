@@ -1,6 +1,6 @@
-from flask import render_template, flash, redirect, url_for, current_app
+from flask import request, render_template, flash, redirect, url_for, current_app
 from flask_login import login_user, login_required, logout_user, current_user
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from app.auth.models import User
 from app.auth.forms import LoginForm, AdminForm
 from app.auth import auth_bp
@@ -9,13 +9,12 @@ from app import db
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    """Authenticates users if username and password exist in user table."""
+    """Authenticates users."""
     if current_user.is_authenticated:
-        current_app.logger.debug(f"User '{current_user.username}' is already authenticated, redirecting")
         return redirect(url_for("weather_bp.index"))
     else:
         login_form = LoginForm()
-        if login_form.validate_on_submit():
+        if request.method == "POST" and login_form.validate():
             username = login_form.username.data
             password = login_form.password.data
             user = User.query.filter_by(username=username).first()
@@ -27,27 +26,31 @@ def login():
             else:
                 flash("Error", category="error")
                 current_app.logger.error(f"User '{username}' failed to log in")
-        return render_template("auth/login.html", user=current_user, login_form=login_form)
+        return render_template("auth/login.html",
+                               user=current_user,
+                               login_form=login_form)
 
 
 @auth_bp.route("/logout")
 @login_required
 def logout():
     """Deauthenticates users."""
-    current_app.logger.info(f"User '{current_user.username}' logging out")
     logout_user()
     flash("Logged Out", category="success")
     return redirect(url_for("auth_bp.login"))
 
 
-@auth_bp.route("/admin")
+@auth_bp.route("/admin", methods=["GET", "POST"])
 @login_required
 def admin():
+    """Updates users information."""
     admin_form = AdminForm()
-    if admin_form.validate_on_submit():
-        user = User.query.filter_by(username=current_user).first()
+    if request.method == "POST" and admin_form.validate():
+        user = User.query.filter_by(username=current_user.username).first()
         user.username = admin_form.username.data
-        user.password = admin_form.password.data
+        user.password = generate_password_hash(admin_form.password.data)
         db.session.commit()
-        current_app.logger.info("User account updated")
-    pass
+        flash("User Details Updated", category="success")
+    return render_template("auth/admin.html",
+                           user=current_user,
+                           admin_form=admin_form)

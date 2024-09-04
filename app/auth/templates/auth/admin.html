@@ -5,24 +5,24 @@
 {% endblock %}
 {% block content %}
     <h1>Admin</h1>
-    <div class="admin-container">
-        <div class="admin-content">
+    <div class="auth-container">
+        <div class="auth-content">
             <form action="" method="post">
-                {{ admin_for.hidden_tag() }}
+                {{ admin_form.hidden_tag() }}
                 <dl>
-                    <dt>{{ admin_for.username.label }}</dt>
-                    <dd>{{ admin_for.username(size=16) }}</dd>
-                    {% for error in admin_for.username.errors %}
+                    <dt>{{ admin_form.username.label }}</dt>
+                    <dd>{{ admin_form.username(size=16) }}</dd>
+                    {% for error in admin_form.username.errors %}
                         <span class="form-error">{{ error }}</span>
                     {% endfor %}
-                    <dt>{{ admin_for.password.label }}</dt>
-                    <dd>{{ admin_for.password(size=16) }}</dd>
-                    {% for error in admin_for.password.errors %}
+                    <dt>{{ admin_form.password.label }}</dt>
+                    <dd>{{ admin_form.password(size=16) }}</dd>
+                    {% for error in admin_form.password.errors %}
                         <span class="form-error">{{ error }}</span>
                     {% endfor %}
-                    <dt>{{ admin_for.submit() }}</dt>
+                    <dt>{{ admin_form.submit() }}</dt>
                 </dl>
-
             </form>
         </div>
     </div>
+{% endblock %}
