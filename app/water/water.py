@@ -22,7 +22,7 @@ def setup():
             systems_available.append((system.id, system.name))
     current_app.logger.debug(f"Systems available {systems_available}")
     if not systems_available:
-        flash("No systems available", category="info")
+        flash("No Systems Available", category="info")
     plant_form.system.choices = systems_available
     if request.method == "POST" and plant_form.validate():
         name = plant_form.name.data
@@ -43,6 +43,7 @@ def setup():
         db.session.add(new_plant)
         db.session.commit()
         current_app.logger.debug(f"New plant '{name}' created")
+        return redirect(url_for("water_bp.setup"))
     plants_available = Plant.query.order_by(Plant.id).all()
     return render_template("water/setup.html",
                            user=current_user,
@@ -56,11 +57,11 @@ def delete(plant_id):
     """Deletes plants, related jobs, and events for the given plant id."""
     plant_selected = Plant.query.filter(Plant.id == plant_id).first()
     if plant_selected:
-        flash("Deleted plant", category="success")
         events.pop(plant_selected.name)
         remove_job(plant_selected.id)
         db.session.delete(plant_selected)
         db.session.commit()
+        flash("Deleted Plant", category="success")
         current_app.logger.debug(f"Deleted plant '{plant_selected.name}'")
     else:
         flash("Does not exist", category="error")
@@ -134,7 +135,7 @@ def configure_check():
     if plant:
         return redirect(url_for("water_bp.configure", plant_id=plant.id))
     else:
-        flash("Must create plant to access configure options", category="error")
+        flash("Must Create Plant", category="error")
         return redirect(url_for("water_bp.setup"))
 
 
@@ -163,7 +164,7 @@ def water(plant_id):
                                water_form=water_form,
                                plants_available=plants_available)
     else:
-        flash("Does not exist", category="error")
+        flash("Does Not Exist", category="error")
         return redirect(url_for("water_bp.water_check"))
 
 
@@ -175,7 +176,7 @@ def water_check():
     if plant:
         return redirect(url_for("water_bp.water", plant_id=plant.id))
     else:
-        flash("Must create plant to access water options", category="error")
+        flash("Must Create Plant", category="error")
         return redirect(url_for("water_bp.setup"))
 
 
@@ -193,5 +194,5 @@ def cancel(plant_id):
             flash("Not Running", category="error")
         return redirect(url_for("water_bp.water", plant_id=plant_selected.id))
     else:
-        flash("Does not exist", category="error")
+        flash("Does Not Exist", category="error")
         return redirect(url_for("water_bp.water_check"))
