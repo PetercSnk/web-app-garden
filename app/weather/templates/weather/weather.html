@@ -15,155 +15,155 @@
         {% endfor %}
     </div>
     {% if render %}
-    <div class="c">
-        <figure class="highcharts-figure">
-            <div id="container"></div>
-        </figure>
-        <script>
-            var time = {{ hourly_data["time"] | safe }}
-            var temperature = {{ hourly_data["temperature"] | safe }}
-            var humidity = {{ hourly_data["humidity"] | safe }}
-            var precipitation_probability = {{ hourly_data["precipitation_probability"] | safe }}
-            var precipitation = {{ hourly_data["precipitation"] | safe }}
-            Highcharts.chart("container", {
-                chart: {
-                    zooming: {
-                        type: "xy"
+        <div class="weather-container">
+            <figure class="highcharts-figure">
+                <div id="container"></div>
+            </figure>
+            <script>
+                var time = {{ hourly_data["time"] | safe }}
+                var temperature = {{ hourly_data["temperature"] | safe }}
+                var humidity = {{ hourly_data["humidity"] | safe }}
+                var precipitation_probability = {{ hourly_data["precipitation_probability"] | safe }}
+                var precipitation = {{ hourly_data["precipitation"] | safe }}
+                Highcharts.chart("container", {
+                    chart: {
+                        zooming: {
+                            type: "xy"
+                        },
+                        backgroundColor: "#212121",
+                        borderColor: "rgba(255,255,255,0.25)",
+                        borderWidth: 2,
+                        style: {
+                            fontFamily: "monospace",
+                        }
                     },
-                    backgroundColor: "#212121",
-                    borderColor: "rgba(255,255,255,0.25)",
-                    borderWidth: 2,
-                    style: {
-                        fontFamily: "monospace",
-                    }
-                },
-                title: {
-                    text: "{{ daily_data.weather_description }}",
-                    align: "left",
-                    style: {
-                        color: "white"
-                    }
-                },
-                subtitle: {
-                    text: `{{ city }}, {{ region }}<br>Date: {{ format_date(daily_data.date) }}, 
-                    Sunrise: {{ daily_data.sunrise }}, Sunset: {{ daily_data.sunset }}`,
-                    align: "left",
-                    style: {
-                        color: "white"
-                    }
-                },
-                xAxis: [{
-                    categories: time,
-                    crosshair: true,
-                    labels: {
+                    title: {
+                        text: "{{ daily_data.weather_description }}",
+                        align: "left",
                         style: {
                             color: "white"
                         }
-                    }
-                }],
-                yAxis: [{
-                    labels: {
-                        format: "{value} °C",
+                    },
+                    subtitle: {
+                        text: `{{ city }}, {{ region }}<br>Date: {{ format_date(daily_data.date) }}, 
+                        Sunrise: {{ daily_data.sunrise }}, Sunset: {{ daily_data.sunset }}`,
+                        align: "left",
                         style: {
-                            color: Highcharts.getOptions().colors[0]
+                            color: "white"
                         }
                     },
-                    title: {
-                        text: "Temperature",
-                        style: {
-                            color: Highcharts.getOptions().colors[0]
+                    xAxis: [{
+                        categories: time,
+                        crosshair: true,
+                        labels: {
+                            style: {
+                                color: "white"
+                            }
                         }
-                    }
-                }, {
-                    labels: {
-                        format: "{value} %",
-                        style: {
-                            color: Highcharts.getOptions().colors[1]
+                    }],
+                    yAxis: [{
+                        labels: {
+                            format: "{value} °C",
+                            style: {
+                                color: Highcharts.getOptions().colors[0]
+                            }
+                        },
+                        title: {
+                            text: "Temperature",
+                            style: {
+                                color: Highcharts.getOptions().colors[0]
+                            }
                         }
-                    },
-                    title: {
-                        text: "Humidity",
-                        style: {
-                            color: Highcharts.getOptions().colors[1]
+                    }, {
+                        labels: {
+                            format: "{value} %",
+                            style: {
+                                color: Highcharts.getOptions().colors[1]
+                            }
+                        },
+                        title: {
+                            text: "Humidity",
+                            style: {
+                                color: Highcharts.getOptions().colors[1]
+                            }
                         }
-                    }
-                }, {
-                    labels: {
-                        format: "{value} %",
-                        style: {
-                            color: Highcharts.getOptions().colors[2]
-                        }
-                    },
-                    title: {
-                        text: "Precipitation",
-                        style: {
-                            color: Highcharts.getOptions().colors[2]
-                        }
-                    },
-                    opposite: true
-                }, {
-                    labels: {
-                        format: "{value} mm",
-                        style: {
-                            color: Highcharts.getOptions().colors[3]
-                        }
-                    },
-                    title: {
-                        text: "Precipitation Probability",
-                        style: {
-                            color: Highcharts.getOptions().colors[3]
-                        }
-                    },
-                    opposite: true
-                }],
-                tooltip: {
-                    shared: true
-                },
-                legend: {
-                    align: "left",
-                    verticalAlign: "top",
-                    backgroundColor: "rgba(255,255,255,0.25)",
-                    itemStyle: {
-                        color: "white"
-                    },
-                    itemHoverStyle: {
-                        color: "lightgreen"
-                    }
-                },
-                series: [{
-                    name: "Temperature",
-                    type: "spline",
-                    data: temperature,
+                    }, {
+                        labels: {
+                            format: "{value} %",
+                            style: {
+                                color: Highcharts.getOptions().colors[2]
+                            }
+                        },
+                        title: {
+                            text: "Precipitation",
+                            style: {
+                                color: Highcharts.getOptions().colors[2]
+                            }
+                        },
+                        opposite: true
+                    }, {
+                        labels: {
+                            format: "{value} mm",
+                            style: {
+                                color: Highcharts.getOptions().colors[3]
+                            }
+                        },
+                        title: {
+                            text: "Precipitation Probability",
+                            style: {
+                                color: Highcharts.getOptions().colors[3]
+                            }
+                        },
+                        opposite: true
+                    }],
                     tooltip: {
-                        valueSuffix: " °C"
-                    }
-                }, {
-                    name: "Humidity",
-                    type: "spline",
-                    yAxis: 1,
-                    data: humidity,
-                    tooltip: {
-                        valueSuffix: " %"
-                    }
-                }, {
-                    name: "Precipitation Probability",
-                    type: "spline",
-                    yAxis: 2,
-                    data: precipitation_probability,
-                    tooltip: {
-                        valueSuffix: " %"
-                    }
-                }, {
-                    name: "Precipitation",
-                    type: "column",
-                    yAxis: 3,
-                    data: precipitation,
-                    tooltip: {
-                        valueSuffix: " mm"
-                    }
-                }]
-            });  
-        </script>
-    </div>
+                        shared: true
+                    },
+                    legend: {
+                        align: "left",
+                        verticalAlign: "top",
+                        backgroundColor: "rgba(255,255,255,0.25)",
+                        itemStyle: {
+                            color: "white"
+                        },
+                        itemHoverStyle: {
+                            color: "lightgreen"
+                        }
+                    },
+                    series: [{
+                        name: "Temperature",
+                        type: "spline",
+                        data: temperature,
+                        tooltip: {
+                            valueSuffix: " °C"
+                        }
+                    }, {
+                        name: "Humidity",
+                        type: "spline",
+                        yAxis: 1,
+                        data: humidity,
+                        tooltip: {
+                            valueSuffix: " %"
+                        }
+                    }, {
+                        name: "Precipitation Probability",
+                        type: "spline",
+                        yAxis: 2,
+                        data: precipitation_probability,
+                        tooltip: {
+                            valueSuffix: " %"
+                        }
+                    }, {
+                        name: "Precipitation",
+                        type: "column",
+                        yAxis: 3,
+                        data: precipitation,
+                        tooltip: {
+                            valueSuffix: " mm"
+                        }
+                    }]
+                });  
+            </script>
+        </div>
     {% endif %}
 {% endblock %}
