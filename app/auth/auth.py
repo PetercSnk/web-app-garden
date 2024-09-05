@@ -51,6 +51,7 @@ def admin():
         user.password = generate_password_hash(admin_form.password.data)
         db.session.commit()
         flash("User Details Updated", category="success")
+        return redirect(url_for("auth_bp.admin"))
     return render_template("auth/admin.html",
                            user=current_user,
                            admin_form=admin_form)
