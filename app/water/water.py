@@ -64,7 +64,7 @@ def delete(plant_id):
         flash("Deleted Plant", category="success")
         current_app.logger.debug(f"Deleted plant '{plant_selected.name}'")
     else:
-        flash("Does not exist", category="error")
+        flash("Does Not Exist", category="error")
     return redirect(url_for("water_bp.setup"))
 
 
@@ -111,7 +111,7 @@ def configure(plant_id):
                                plants_available=plants_available,
                                active_job=active_job)
     else:
-        flash("Does not exist", category="error")
+        flash("Does Not Exist", category="error")
         return redirect(url_for("water_bp.configure_check"))
 
 
