@@ -28,7 +28,7 @@ def index():
 @login_required
 def request_weather():
     daily_count, hourly_count = jobs.get_weather()
-    msg = f"Added {daily_count} / {hourly_count} new records"
+    msg = f"Added {daily_count} / {hourly_count} New Records"
     flash(msg, category="info")
     return redirect(url_for("weather_bp.index"))
 
