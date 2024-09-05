@@ -37,24 +37,23 @@ def request_weather():
 @login_required
 def graph(daily_id):
     """Handles daily weather charts and requests for weather data."""
-    if request.method == "GET":
-        available = Daily.query.order_by(Daily.date).all()
-        if daily_id in [record.id for record in available]:
-            daily_data = Daily.query.filter(Daily.id == daily_id).first()
-            hourly_data = get_formatted_hourly(daily_id)
-            return render_template("weather/weather.html",
-                                   render=True,
-                                   user=current_user,
-                                   available=available,
-                                   city=current_app.config["CITY"],
-                                   region=current_app.config["REGION"],
-                                   daily_data=daily_data,
-                                   hourly_data=hourly_data)
-        else:
-            return render_template("weather/weather.html",
-                                   render=False,
-                                   user=current_user,
-                                   available=available)
+    daily_available = Daily.query.order_by(Daily.date).all()
+    if daily_id in [record.id for record in daily_available]:
+        daily_data = Daily.query.filter(Daily.id == daily_id).first()
+        hourly_data = get_formatted_hourly(daily_id)
+        return render_template("weather/weather.html",
+                               render=True,
+                               user=current_user,
+                               daily_available=daily_available,
+                               city=current_app.config["CITY"],
+                               region=current_app.config["REGION"],
+                               daily_data=daily_data,
+                               hourly_data=hourly_data)
+    else:
+        return render_template("weather/weather.html",
+                               render=False,
+                               user=current_user,
+                               daily_available=daily_available)
 
 
 def get_formatted_hourly(daily_id):

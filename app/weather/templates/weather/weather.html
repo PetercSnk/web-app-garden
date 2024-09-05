@@ -10,7 +10,7 @@
         <a href="/weather/request-weather">Request Weather</a>
     </div>
     <div class="sub-links">
-        {% for record in available %}
+        {% for record in daily_available %}
             <a href="/weather/{{ record.id }}">{{ format_date(record.date) }}</a>
         {% endfor %}
     </div>
