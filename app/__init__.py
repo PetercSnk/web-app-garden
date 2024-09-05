@@ -62,6 +62,10 @@ def create_app():
     def load_user(id):
         return User.query.get(int(id))
 
+    from app.auth.setup import init_accounts
+    with app.app_context():
+        init_accounts()
+
     # Weather module setup.
     from app.weather import weather_bp
     app.register_blueprint(weather_bp, url_prefix="/weather")
