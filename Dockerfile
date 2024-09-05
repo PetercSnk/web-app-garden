@@ -11,7 +11,6 @@ COPY requirements.txt .
 COPY gunicorn_config.py .
 
 RUN mkdir ./logs
-VOLUME ./logs
 
 RUN pip3 install -r requirements.txt
 
