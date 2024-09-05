@@ -93,6 +93,7 @@ def configure(plant_id):
                 schedule_job(plant_selected)
             db.session.commit()
             current_app.logger.debug(f"Config for '{plant_selected.name}' updated")
+            return redirect(url_for("water_bp.configure", plant_id=plant_id))
         # Prefill forms with current plants configuration.
         config_form.enabled.default = plant_selected.config.enabled
         config_form.duration_sec.default = plant_selected.config.duration_sec
@@ -157,6 +158,7 @@ def water(plant_id):
                                   args=[water_form.duration_sec.data, plant_selected.id])
                 current_app.logger.debug("Started manual water process")
                 flash("Started Process", category="success")
+            return redirect(url_for("water_bp.water", plant_id=plant_id))
         plants_available = Plant.query.order_by(Plant.id).all()
         return render_template("water/water.html",
                                user=current_user,

@@ -26,6 +26,7 @@ def login():
             else:
                 flash("Error", category="error")
                 current_app.logger.error(f"User '{username}' failed to log in")
+                return redirect(url_for("auth_bp.login"))
         return render_template("auth/login.html",
                                user=current_user,
                                login_form=login_form)
