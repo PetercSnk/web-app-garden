@@ -5,35 +5,23 @@ These methods will be called during the watering process so make sure
 everything is as mentioned. In the case where multiple systems or devices
 are used for one plant combine them into a single class.
 """
-from flask import current_app
-# from app.water.valve import Valve
-# from app.water.pump import Pump
-# import time
-#
-#
-# class Herbs(Valve, Pump):
-#     def __init__(self):
-#         Valve.__init__(self, 18, 12)
-#         Pump.__init__(self, 16)
-#         self.wait = 2
-#
-#     def on(self):
-#         Valve.on()
-#         time.sleep(self.wait)
-#         Pump.on()
-#
-#     def off(self):
-#         Valve.off()
-#         time.sleep(self.wait)
-#         Pump.off()
+from app.water.valve import Valve
+from app.water.pump import Pump
+import time
 
 
-class TEST(object):
+class ValvePump(Valve, Pump):
     def __init__(self):
-        self.atr = "TEST_ATR"
+        Valve.__init__(self, 18, 12)
+        Pump.__init__(self, 16)
+        self.wait = 2
 
     def on(self):
-        current_app.logger.debug("ON")
+        Valve.on()
+        time.sleep(self.wait)
+        Pump.on()
 
     def off(self):
-        current_app.logger.debug("OFF")
+        Valve.off()
+        time.sleep(self.wait)
+        Pump.off()
