@@ -23,9 +23,9 @@ class ValvePump:
         self.pump.on()
 
     def off(self):
-        self.valve.on()
+        self.valve.off()
         time.sleep(self.wait)
-        self.pump.on()
+        self.pump.off()
 
     class Valve:
         """Controls outdoor valve.
