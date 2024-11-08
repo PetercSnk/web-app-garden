@@ -1,8 +1,14 @@
 # syntax=docker/dockerfile:1
 
-FROM python:3.11.9-slim
+FROM debian:bookworm
 
-WORKDIR /automated-garden
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update && apt-get install -y python3-pip python3-venv cmake
+
+WORKDIR /web-app-garden
+
+RUN python3 -m venv venv
 
 COPY app ./app
 COPY application.py .
@@ -12,8 +18,8 @@ COPY gunicorn_config.py .
 
 RUN mkdir ./logs
 
-RUN pip3 install -r requirements.txt
+RUN venv/bin/pip install -r requirements.txt
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--config", "gunicorn_config.py", "wsgi:app"]
+CMD ["venv/bin/gunicorn", "--preload", "--config", "gunicorn_config.py", "wsgi:app"]
