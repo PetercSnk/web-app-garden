@@ -5,7 +5,5 @@ services:
         ports:
           - 8000:8000
         volumes:
-          - logs:/web-app-garden/logs
+          - ./logs:/web-app-garden/logs
         privileged: true
-volumes:
-    logs:
